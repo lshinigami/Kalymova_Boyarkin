@@ -8,10 +8,230 @@
   <meta name="keywords" content="Weblog, blog, IITU, IT, Gaming, News, Articles, Various">
   <meta name="og:image" content=""> <!-- Logo should be here -->
   <title>Home</title>
+  <style>
+    /* Reset default values */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #2e2e2e;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Header */
+    header {
+      top: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem 2rem;
+      z-index: 999;
+    }
+
+    header h1 {
+      display: flex;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .search-bar {
+      display: flex;
+      position: absolute;
+      right: 0;
+      padding: 1rem 2rem;
+    }
+
+    .search-bar input {
+      background: #1b1b1b;
+      color: gray;
+      font-style: italic;
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      width: 250px;
+    }
+
+    .search-bar .search-bar-icon {
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+      width: 20px;
+    }
+
+    /* Sidebar */
+    aside {
+      position: fixed;
+      top: 0;
+      left: -260px;
+      width: 260px;
+      height: 100%;
+      background: #1b1b1b;
+      padding: 1rem;
+      transition: left 0.3s ease-in-out;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    aside.active {
+      left: 0;
+    }
+
+    aside .profile {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    aside .profile img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      margin-bottom: 0.5rem;
+    }
+
+    aside nav ul {
+      list-style: none;
+    }
+
+    aside nav ul li {
+      padding: 0.8rem 0;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    aside nav ul li:hover {
+      color: lightskyblue;
+    }
+
+    aside nav ul li section {
+      display: flex;
+      justify-content: flex-start;
+      gap: 0.8rem;
+      align-items: center;
+    }
+
+    aside nav ul li section img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    aside nav ul li section h2 {
+      font-size: 1rem;
+      color: white;
+    }
+
+    /* Sidebar toggle menu */
+    .menu-toggle {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      width: 35px;
+      height: 35px;
+      background: #1b1b1b;
+      border-radius: 50%;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 1001;
+      display: inline-block;
+      padding-top: 6.5px;
+      padding-left: 7.5px;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: white;
+      margin: 4px 0;
+    }
+
+    /* Posts (main) */
+    main {
+      margin: 2rem auto;
+      max-width: 800px;
+      padding: 1rem;
+    }
+
+    article {
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    article header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+      padding: 0;
+    }
+
+    article header img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    article header h2 {
+      font-size: 1rem;
+      color: #aaa;
+    }
+
+    article p {
+      margin: 0.5rem 0;
+    }
+
+    article img.content-img {
+      width: 100%;
+      border-radius: 15px;
+      margin-top: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .post-footer {
+      background: #3a3a3a;
+      margin-top: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-radius: 15px;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .post-footer .post-rating {
+      justify-content: flex-start;
+    }
+
+    .post-footer .post-additional {
+      justify-content: flex-end;
+    }
+  </style>
 </head>
 <body>
   <!-- Sidebar toggle menu -->
-  <div class="menu-toggle" onclick=""> <!-- Needs a JS function to activate side panel -->
+  <div class="menu-toggle" onclick="toggleMenu()"> <!-- Needs a JS function to activate side panel -->
     <!-- Each <span> will be a simple white dash in this "hamburger menu" -->
     <span></span>
     <span></span>
@@ -56,7 +276,7 @@
 
   <!-- Header -->
   <header style="position: sticky; background: #2e2e2e;">
-    <h1>LOGO</h1>
+    <h1 style="">LOGO</h1>
       <div class="search-bar">
         <form>
           <input type="submit" class="search-bar-icon" value="⌕">
@@ -121,5 +341,10 @@
 
   </main>
 
+  <script>
+    function toggleMenu() {
+      document.getElementById("sidebar").classList.toggle("active");
+    }
+  </script>
 </body>
 </html>
