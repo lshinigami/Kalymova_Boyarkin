@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="User profile page">
+    <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
+    <meta name="keywords" content="Weblog, blog, IITU, IT, Profile">
+    <meta name="og:image" content="/static/u/manul/ava.jpg">
+    <title>Profile</title>
+    <style>
+        /* Reset default values */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #2e2e2e;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Header */
+        header {
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem 2rem;
+            z-index: 999;
+        }
+
+        header h1 {
+            display: flex;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .search-bar {
+            display: flex;
+            position: absolute;
+            right: 0;
+            padding: 1rem 2rem;
+        }
+
+        .search-bar input {
+            background: #1b1b1b;
+            color: gray;
+            font-style: italic;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+            width: 250px;
+        }
+
+        .search-bar .search-bar-icon {
+            background: none;
+            border: none;
+            color: inherit;
+            padding: 0;
+            font: inherit;
+            cursor: pointer;
+            width: 20px;
+        }
+
+        /* Sidebar */
+        aside {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            height: 100%;
+            background: #1b1b1b;
+            padding: 1rem;
+            transition: left 0.3s ease-in-out;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        aside.active {
+            left: 0;
+        }
+
+        aside .profile {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        aside .profile img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 0.5rem;
+        }
+
+        aside nav ul {
+            list-style: none;
+        }
+
+        aside nav ul li {
+            padding: 0.8rem 0;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        aside nav ul li #activated-nav-txt {
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        aside nav ul li #deactivated-nav-txt {
+            text-decoration: none;
+            font-weight: normal;
+        }
+
+        aside nav ul li:hover {
+            color: lightskyblue;
+        }
+
+        aside nav ul li section {
+            display: flex;
+            justify-content: flex-start;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        aside nav ul li section img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        aside nav ul li section h2 {
+            font-size: 1rem;
+            color: white;
+        }
+
+        /* Sidebar toggle menu */
+        .menu-toggle {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            width: 35px;
+            height: 35px;
+            background: #1b1b1b;
+            border-radius: 50%;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1001;
+            display: inline-block;
+            padding-top: 6.5px;
+            padding-left: 7.5px;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: white;
+            margin: 4px 0;
+        }
+
+        /* Profile */
+        section.profile-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: #1b1b1b;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        figure {
+            margin: 0;
+        }
+
+        figure img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        figcaption {
+            margin-top: 1rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        section.profile-info form {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        label {
+            text-align: left;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            padding: 0.6rem;
+            border: none;
+            border-radius: 8px;
+            background: #2e2e2e;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border: 1px solid lightskyblue;
+        }
+
+        button {
+            padding: 0.7rem;
+            border: none;
+            border-radius: 8px;
+            background: lightskyblue;
+            color: #1b1b1b;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: deepskyblue;
+        }
+
+        /* Posts (main) */
+        main {
+            margin: 2rem auto;
+            max-width: 800px;
+            padding: 1rem;
+        }
+
+        article {
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        article header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+
+        article header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        article header h2 {
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        article p {
+            margin: 0.5rem 0;
+        }
+
+        article img.content-img {
+            width: 100%;
+            border-radius: 15px;
+            margin-top: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        article figure {
+            display: grid;
+            align-items: center;
+            justify-content: center;
+        }
+        article figure p {
+            font-size: 100px;
+            color: dimgray;
+            display: grid;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        article figure figcaption {
+            color: #aaa;
+            font-size: 30px;
+            display: grid;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .post-footer {
+            background: #3a3a3a;
+            margin-top: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .post-footer .enabled-span {
+            cursor: pointer;
+            user-select: none;
+            color: #aaaaaa;
+        }
+
+        .post-footer .disabled-span {
+            cursor: pointer;
+            user-select: none;
+            color: #1b1b1b;
+        }
+
+        .post-footer .disabled-span-clicked {
+            cursor: pointer;
+            user-select: none;
+            color: lightskyblue;
+        }
+
+        .post-footer .post-rating {
+            gap: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .post-footer .post-additional {
+            justify-content: flex-end;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+
+    <!-- Probably will be used later to detect when JS is disabled by using Noscript, PrivacyBadger or anything like that -->
+
+    <!-- <noscript>
+        <style type="text/css">
+            .pagecontainer {
+                display: none;
+            }
+        </style>
+        <div class="noscriptmsg">
+            You don't have javascript enabled. Good luck with that.
+        </div>
+    </noscript> -->
+</head>
+<body>
+<div class=".pagecontainer">
+    <!-- Sidebar toggle menu -->
+    <div class="menu-toggle" onclick="toggleMenu()">
+        <!-- Each <span> will be a simple white dash in this "hamburger menu" -->
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="profile">
+            <a href="/u/Manul"><img src="/static/u/manul/ava.jpg" alt="User Avatar"
+                 onerror="this.src='/static/u/placeholder_ava.jpg';"></a>
+            <a href="/u/Manul"><p>u/Manul</p></a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/"
+                       id='deactivated-nav-txt'>Home</a>
+                </li>
+                <li><a href="/?filter=popular"
+                       id='deactivated-nav-txt'>Popular</a></li>
+                <li><a href="/?filter=latest"
+                       id='deactivated-nav-txt'>Latest</a>
+                </li>
+
+                <li style="color: gray;">Subscriptions ▼</li>
+                <!-- This is a list of groups that the user is currently subscribed to.
+                It will change dynamically through the Backend -->
+                <a href="/g/HollowKnight">
+                    <li>
+                        <section>
+                            <img src="/static/g/hollowknight/ava.jpg" alt="Group Icon" onerror="this.src='/static/g/group_ava_placeholder.jpg';">
+                            <h2>HollowKnight</h2>
+                        </section>
+                    </li>
+                </a>
+                <a href="/g/IITU">
+                    <li>
+                        <section>
+                            <img src="/static/g/iitu/ava.jpg" alt="Group Icon" onerror="this.src='/static/g/group_ava_placeholder.jpg';">
+                            <h2>IITU</h2>
+                        </section>
+                    </li>
+                </a>
+
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Header -->
+    <header style="position: sticky; background: #2e2e2e;">
+        <h1 style="">LOGO</h1>
+        <div class="search-bar">
+            <form> <!-- Don't exactly know what to do with it, yet -->
+                <input type="submit" class="search-bar-icon" value="⌕">
+                <input type="text" placeholder="Search for any post...">
+            </form>
+        </div>
+    </header>
+
+    <main>
+        <section class="profile-info">
+            <figure>
+                {% if clogin.lower()==login.lower() %}
+                <form id="avatarForm" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="fileInput" name="avatar" style="display: none;" onchange="submitForm(event)" accept="image/*">
+                    <img id="avatarImage"
+                         src="/static/u/{{ login.lower() }}/ava.jpg"
+                         alt="User avatar"
+                         onerror="this.src='/static/u/placeholder_ava.jpg';"
+                         onclick="document.getElementById('fileInput').click();"
+                         style="cursor: pointer; {% if error==True %} border: 2px red solid;{% endif %}">
+                </form>
+                {% else %}
+                <img src="/static/u/{{ login.lower() }}/ava.jpg" alt="User avatar" onerror="this.src='/static/u/placeholder_ava.jpg';">
+                {% endif %}
+                <figcaption>u/{{ login }}</figcaption>
+            </figure>
+
+            <!-- Profile edit form -->
+            <form method="POST">
+                <div>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="test0@example.com" required>
+                </div>
+
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter new password">
+                </div>
+
+                <button type="submit">Save</button>
+            </form>
+            <form method="POST">
+                <button type="submit" name="logout">Sign Out</button>
+            </form>
+        </section>
+
+        <!-- Profile Posts -->
+        <article>
+            <!-- Group of origin (avatar, name), upload date -->
+            <header>
+                <a href="/g/DemonSlayer"><img src="/static/g/demonslayer/ava.jpg" alt="Avatar" onerror="this.src='/static/g/group_ava_placeholder.jpg';"></a>
+                <h2><a href="/g/DemonSlayer">g/DemonSlayer</a></h2>
+                <h2>•</h2>
+                <h2>11.09.25</h2>
+            </header>
+
+            <!-- Post title, post content -->
+            <a href="/p/3">
+                <p>Tanjiro and Kanao</p>
+                <img src="/static/p/3/Post3_img_placeholder.jpg" alt="Content" class="content-img">
+            </a>
+
+            <!-- Post rating, additional button (share a link) -->
+            <div class="post-footer" data-post-id="3">
+                <div class="post-rating">
+                    <span id="like-button" style="font-size: 20px;" class='enabled-span' onclick="send_change_rating(event)" >↑</span>
+                    <span id="post-rating-number">15.2k</span>
+                    <span id="dislike-button" style="font-size: 20px;" class='enabled-span'>↓</span>
+                </div>
+                <div class="post-additional">
+                    <span class="share-button">🔗</span>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Weblog Project</p>
+    </footer>
+    <script>
+        function toggleMenu() {
+            document.getElementById("sidebar").classList.toggle("active");
+        }
+        function submitForm() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length > 0) {
+                document.getElementById('avatarForm').submit();
+            }
+        }
+    </script>
+</div>
+</body>
+</html>
