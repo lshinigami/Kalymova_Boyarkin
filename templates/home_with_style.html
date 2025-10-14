@@ -23,7 +23,7 @@
       left: -260px;
       width: 260px;
       height: 100%;
-      background-color: #c62828; /* red */
+      background-color: #c62828;
       color: white;
       padding: 1rem;
       transition: left 0.3s ease-in-out;
@@ -147,15 +147,14 @@
   </style>
 </head>
 <body>
+<button class="menu-toggle"
+        style="width:40px; height:40px;" onclick="toggleMenu()">☰</button>
 
-<button class="menu-toggle" onclick="toggleMenu()">
-  <span class="navbar-toggler-icon"></span>☰
-</button>
 
 <aside id="sidebar">
   <div class="text-center mb-4">
     <a href="/profile" class="text-decoration-none text-white">
-      <img src="static/Profile_avatar_placeholder.png" alt="User" class="mb-2">
+      <img src="static/Profile_avatar_placeholder.png" alt="User" class="mb-2"/>
       <p class="fw-bold">u/Manul</p>
     </a>
   </div>
@@ -182,15 +181,18 @@
   </nav>
 </aside>
 
-<header class="d-flex justify-content-between align-items-center">
-  <h1 class="text-danger fw-bold m-0">LOGO</h1>
+<header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light">
+  <div class="flex-grow-1 text-center">
+    <img class="flex-grow-1 text-center" src="static/logo.png">
+  </div>
   <div class="search-bar">
     <form class="d-flex align-items-center gap-2">
-      <input type="text" placeholder="Search for any post...">
+      <input type="text" class="form-control form-control-sm border-danger" placeholder="Search for any post...">
       <button type="submit" class="btn btn-danger btn-sm text-white">Search</button>
     </form>
   </div>
 </header>
+
 
 <main>
 

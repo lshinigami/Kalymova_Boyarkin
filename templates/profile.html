@@ -1,192 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="User profile page">
-    <meta name="author" content="Kalymova Zhansaya, IT2-2312">
+    <meta name="description" content="All-in-one weblog for all your needs and services.">
+    <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
+    <meta name="keywords" content="Weblog, blog, IITU, IT, Gaming, News, Articles, Various">
     <title>Profile</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #2e2e2e;
-            color: white;
-            margin: 0;
-            padding: 0;
+            background-color: #fff;
+            color: #212121;
+            font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden;
         }
 
+        /* Sidebar */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            height: 100%;
+            background-color: #c62828;
+            color: white;
+            padding: 1rem;
+            transition: left 0.3s ease-in-out;
+            z-index: 1040;
+        }
+        #sidebar.active {
+            left: 0;
+        }
+        #sidebar a {
+            color: white;
+            text-decoration: none;
+        }
+        #sidebar ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        #sidebar li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        #sidebar li:hover {
+            color: #ffebee;
+        }
+        #sidebar img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+        }
+
+        .menu-toggle {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background-color: #c62828;
+            border: none;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 50%;
+            z-index: 1050;
+            cursor: pointer;
+        }
+
+        /* Header */
         header {
             position: sticky;
             top: 0;
-            background: #2e2e2e;
-            padding: 1rem;
-            text-align: center;
-            border-bottom: 1px solid #444;
+            background-color: #f8f9fa;
+            border-bottom: 3px solid #c62828;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         header h1 {
-            font-size: 1.8rem;
+            color: #c62828;
+            font-weight: bold;
             text-transform: uppercase;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .search-bar input {
+            border: 1px solid #c62828;
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            width: 220px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.25);
+        }
+
+        .search-bar button {
+            background-color: #c62828;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .search-bar button:hover {
+            background-color: #b71c1c;
         }
 
         main {
+            margin-top: 2rem;
             max-width: 800px;
-            margin: 2rem auto;
-            padding: 1rem;
+            margin-left: auto;
+            margin-right: auto;
         }
 
+        /* Profile Info Section */
         section.profile-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            background: #1b1b1b;
+            background-color: #fff;
+            border-left: 5px solid #c62828;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
             padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        figure {
-            margin: 0;
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
         figure img {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            border: 3px solid #c62828;
         }
 
         figcaption {
             margin-top: 1rem;
             font-size: 1.3rem;
             font-weight: bold;
+            color: #c62828;
         }
 
-        form {
-            margin-top: 2rem;
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        label {
+        form label {
             text-align: left;
             font-size: 0.9rem;
-            color: #ccc;
+            color: #555;
         }
 
-        input[type="email"],
-        input[type="password"] {
+        form input {
+            border: 1px solid #ccc;
+            border-radius: 8px;
             padding: 0.6rem;
-            border: none;
-            border-radius: 8px;
-            background: #2e2e2e;
+        }
+
+        form input:focus {
+            border-color: #c62828;
+            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.25);
+        }
+
+        form button {
+            background-color: #c62828;
             color: white;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            border: 1px solid lightskyblue;
-        }
-
-        button {
-            padding: 0.7rem;
+            font-weight: bold;
             border: none;
             border-radius: 8px;
-            background: lightskyblue;
-            color: #1b1b1b;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s ease;
+            padding: 0.6rem;
+            transition: background 0.3s;
         }
 
-        button:hover {
-            background: deepskyblue;
+        form button:hover {
+            background-color: #b71c1c;
         }
 
-        footer {
-            margin-top: 3rem;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #aaa;
-        }
-
-
+        /* Posts */
         article {
-            border-radius: 12px;
-            padding: 1rem;
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-left: 5px solid #c62828;
+            border-radius: 10px;
             margin-bottom: 2rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         article header {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 0.8rem;
+            gap: 0.75rem;
             margin-bottom: 1rem;
-            padding: 0;
         }
 
         article header img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         article header h2 {
+            color: #c62828;
             font-size: 1rem;
-            color: #aaa;
+            margin: 0;
         }
 
         article p {
             margin: 0.5rem 0;
+            color: #333;
         }
 
         article img.content-img {
             width: 100%;
-            border-radius: 15px;
+            border-radius: 10px;
             margin-top: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .post-footer {
-            background: #3a3a3a;
-            margin-top: 0.8rem;
+            background-color: #fce4ec;
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
             display: flex;
             justify-content: space-between;
-            padding: 10px;
-            border-radius: 15px;
+            color: #b71c1c;
+            font-weight: 500;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
             font-size: 0.9rem;
-            color: #aaa;
+            color: #888;
         }
 
-        .post-footer .post-rating {
-            justify-content: flex-start;
-        }
-
-        .post-footer .post-additional {
-            justify-content: flex-end;
-        }
-
-        a {
-            font-family: Arial, sans-serif;
-            background: #2e2e2e;
-            color: white;
-            overflow-x: hidden;
+        @media (max-width: 600px) {
+            .search-bar { display: none; }
         }
     </style>
 </head>
+
 <body>
+<button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+<aside id="sidebar">
+    <div class="text-center mb-4">
+        <a href="/profile" class="text-decoration-none text-white">
+            <img src="static/Profile_avatar_placeholder.png" alt="User">
+            <p class="fw-bold mt-2">u/Manul</p>
+        </a>
+    </div>
+
+    <nav>
+        <ul>
+            <li><a href="/"><strong><u>Home</u></strong></a></li>
+            <li><a href="/?filter=popular">Popular</a></li>
+            <li><a href="/?filter=latest">Latest</a></li>
+        </ul>
+    </nav>
+</aside>
 
 <header>
-    <h1>Profile</h1>
+    <div class="flex-grow-1 text-center">
+        <h1>Profile</h1>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" placeholder="Search...">
+        <button>Search</button>
+    </div>
 </header>
 
 <main>
@@ -196,72 +282,54 @@
             <figcaption>u/Manul</figcaption>
         </figure>
 
-        <!-- Profile edit form -->
-        <form method="POST" action="/profile/save">
-            <div>
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="user@example.com" required>
+        <form method="POST" action="/profile/save" class="mt-4 mx-auto" style="max-width:400px;">
+            <div class="mb-3 text-start">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" class="form-control" value="user@example.com" required>
             </div>
 
-            <div>
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter new password">
+            <div class="mb-3 text-start">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter new password">
             </div>
 
-            <button type="submit">Save</button>
+            <button type="submit" class="btn w-100">Save</button>
         </form>
     </section>
 
-    <!-- Profile Posts -->
     <article>
         <header>
-            <a href="/u/Manul"><img src="static/Profile_avatar_placeholder.png"
-                                    alt="Avatar"></a>
-            <h2><a href="/u/Manul">u/Manul</a></h2>
-            <h2>•</h2>
-            <h2>03.09.25</h2>
+            <a href="/u/Manul"><img src="static/Profile_avatar_placeholder.png" alt="Avatar"></a>
+            <h2><a href="/u/Manul" class="text-decoration-none text-danger">u/Manul</a></h2>
+            <span>• 03.09.25</span>
         </header>
 
-        <a href="/g/demonslayer/comments/0">
+        <a href="/g/demonslayer/comments/0" class="text-decoration-none text-dark">
             <p>Akaza, 3 Young Moon</p>
             <img src="static/ProfilePost_2_placeholder.jpg" alt="Content" class="content-img">
         </a>
 
-        <div class="post-footer" data-post-id="g/HollowKnight/0">
-            <div class="post-rating">
-                <span class="like-button">👍</span>
-                <span class="post-rating-number">5.2k</span>
-                <span class="dislike-button">👎</span>
-            </div>
-            <div class="post-additional">
-                <span class="share-button">🔗</span>
-            </div>
+        <div class="post-footer mt-3">
+            <div><span>👍</span> 5.2k <span class="ms-2">👎</span></div>
+            <div><span>🔗</span></div>
         </div>
     </article>
 
     <article>
         <header>
-            <a href="/u/Manul"><img src="static/Profile_avatar_placeholder.png"
-                                    alt="Avatar"></a>
-            <h2><a href="/u/Manul">u/Manul</a></h2>
-            <h2>•</h2>
-            <h2>03.09.25</h2>
+            <a href="/u/Manul"><img src="static/Profile_avatar_placeholder.png" alt="Avatar"></a>
+            <h2><a href="/u/Manul" class="text-decoration-none text-danger">u/Manul</a></h2>
+            <span>• 03.09.25</span>
         </header>
 
-        <a href="/g/demonslayer/comments/1">
+        <a href="/g/demonslayer/comments/1" class="text-decoration-none text-dark">
             <p>Tanjiro and Kanao</p>
             <img src="static/ProfilePost_1_placeholder.jpg" alt="Content" class="content-img">
         </a>
 
-        <div class="post-footer" data-post-id="g/HollowKnight/0">
-            <div class="post-rating">
-                <span class="like-button">👍</span>
-                <span class="post-rating-number">15.2k</span>
-                <span class="dislike-button">👎</span>
-            </div>
-            <div class="post-additional">
-                <span class="share-button">🔗</span>
-            </div>
+        <div class="post-footer mt-3">
+            <div><span>👍</span> 15.2k <span class="ms-2">👎</span></div>
+            <div><span>🔗</span></div>
         </div>
     </article>
 </main>
@@ -269,5 +337,13 @@
 <footer>
     <p>&copy; 2025 Weblog Project</p>
 </footer>
+
+<script>
+    function toggleMenu() {
+        document.getElementById("sidebar").classList.toggle("active");
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
