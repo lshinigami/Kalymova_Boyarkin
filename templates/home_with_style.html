@@ -1,353 +1,308 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="description" content="All-in-one weblog for all your needs and services.">
-      <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
-      <meta name="keywords" content="Weblog, blog, IITU, IT, Gaming, News, Articles, Various">
-      <meta name="og:image" content=""> <!-- Logo should be here -->
-      <title>Home</title>
-      <style>
-        /* Reset default values */
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        body {
-          font-family: Arial, sans-serif;
-          background: #2e2e2e;
-          color: white;
-          overflow-x: hidden;
-        }
-
-        a {
-          text-decoration: none;
-          color: inherit;
-        }
-
-        /* Header */
-        header {
-          top: 0;
-          width: 100%;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="All-in-one weblog for all your needs and services.">
+    <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
+    <meta name="keywords" content="Weblog, blog, IITU, IT, Gaming, News, Articles, Various">
+    <meta name="og:image" content="/static/logo.png">
+    <title>Home</title>
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/static/css.css" rel="stylesheet">
+    <style>
+        .search-figure {
           display: flex;
-          justify-content: center;
+          gap: 0.75rem;
           align-items: center;
-          padding: 1rem 2rem;
-          z-index: 999;
-        }
-
-        header h1 {
-          display: flex;
-          justify-content: center;
-          font-size: 1.8rem;
-          font-weight: bold;
-          text-transform: uppercase;
-        }
-
-        .search-bar {
-          display: flex;
-          position: absolute;
-          right: 0;
-          padding: 1rem 2rem;
-        }
-
-        .search-bar input {
-          background: #1b1b1b;
-          color: gray;
-          font-style: italic;
-          padding: 0.5rem 0.8rem;
-          border-radius: 6px;
-          border: none;
-          outline: none;
-          width: 250px;
-        }
-
-        .search-bar .search-bar-icon {
-          background: none;
-          border: none;
-          color: inherit;
-          padding: 0;
-          font: inherit;
-          cursor: pointer;
-          width: 20px;
-        }
-
-        /* Sidebar */
-        aside {
-          position: fixed;
-          top: 0;
-          left: -260px;
-          width: 260px;
-          height: 100%;
-          background: #1b1b1b;
-          padding: 1rem;
-          transition: left 0.3s ease-in-out;
-          overflow-y: auto;
-          z-index: 1000;
-        }
-
-        aside.active {
-          left: 0;
-        }
-
-        aside .profile {
-          text-align: center;
-          margin-bottom: 2rem;
-        }
-
-        aside .profile img {
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          margin-bottom: 0.5rem;
-        }
-
-        aside nav ul {
-          list-style: none;
-        }
-
-        aside nav ul li {
-          padding: 0.8rem 0;
-          cursor: pointer;
-          transition: color 0.2s;
-        }
-
-        aside nav ul li:hover {
-          color: lightskyblue;
-        }
-
-        aside nav ul li section {
-          display: flex;
-          justify-content: flex-start;
-          gap: 0.8rem;
-          align-items: center;
-        }
-
-        aside nav ul li section img {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
-        aside nav ul li section h2 {
-          font-size: 1rem;
-          color: white;
-        }
-
-        /* Sidebar toggle menu */
-        .menu-toggle {
-          position: fixed;
-          top: 1rem;
-          left: 1rem;
-          width: 35px;
-          height: 35px;
-          background: #1b1b1b;
-          border-radius: 50%;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-          z-index: 1001;
-          display: inline-block;
-          padding-top: 6.5px;
-          padding-left: 7.5px;
-        }
-
-        .menu-toggle span {
-          display: block;
-          width: 20px;
-          height: 2px;
-          background: white;
-          margin: 4px 0;
-        }
-
-        /* Posts (main) */
-        main {
-          margin: 2rem auto;
-          max-width: 800px;
-          padding: 1rem;
-        }
-
-        article {
-          border-radius: 12px;
-          padding: 1rem;
-          margin-bottom: 2rem;
-        }
-
-        article header {
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          gap: 0.8rem;
+          background-color: #fff;
+          border: 1px solid #eee;
+          border-left: 5px solid #c62828;
+          border-radius: 10px;
           margin-bottom: 1rem;
-          padding: 0;
+          padding: 1rem 1.25rem;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-
-        article header img {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        .search-figure img {
+            width: 80px;
+            border-radius: 50%;
         }
+    </style>
+    <script src="/static/socket.io.min.js"></script>
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <!-- Detect if PrivacyBadger/NoScript or AdBlocker disabled JavaScript -->
+    <noscript>
+        <style type="text/css">
+            #container {
+                display: none;
+            }
+        </style>
+        <div class="noscriptmsg">
+            You don't have javascript enabled. Good luck with that.
+        </div>
+    </noscript>
+</head>
+<body>
+<div id="container">
+<button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
 
-        article header h2 {
-          font-size: 1rem;
-          color: #aaa;
-        }
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="text-center mb-4">
+            <a href="/u/{{ login }}"><img src="/uploads/u/{{ login.lower() }}/ava.jpg" alt="User Avatar"
+                 onerror="this.src='/static/placeholder_ava.jpg';" class="mb-2"></a>
+            <a href="/u/{{ login }}"><p class="fw-bold mt-2">u/{{ login }}</p></a>
+        </div>
 
-        article p {
-          margin: 0.5rem 0;
-        }
+        <nav>
+            <ul>
+                <li><a href="/"
+                       class="{{ 'activated-nav-txt' if filter!='popular' and filter!='latest' else 'deactivated-nav-txt' }}">Home</a>
+                </li>
+                <li><a href="/?filter=popular"
+                       class="{{ 'activated-nav-txt' if filter=='popular' else 'deactivated-nav-txt' }}">Popular</a></li>
+                <li><a href="/?filter=latest"
+                       class="{{ 'activated-nav-txt' if filter=='latest' else 'deactivated-nav-txt' }}">Latest</a>
+                </li>
 
-        article img.content-img {
-          width: 100%;
-          border-radius: 15px;
-          margin-top: 1rem;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
-        .post-footer {
-          background: #3a3a3a;
-          margin-top: 0.8rem;
-          display: flex;
-          justify-content: space-between;
-          padding: 10px;
-          border-radius: 15px;
-          font-size: 0.9rem;
-          color: #aaa;
-        }
-
-        .post-footer .post-rating {
-          justify-content: flex-start;
-        }
-
-        .post-footer .post-additional {
-          justify-content: flex-end;
-        }
-      </style>
-    </head>
-    <body>
-      <!-- Sidebar toggle menu -->
-      <div class="menu-toggle" onclick="toggleMenu()"> <!-- Needs a JS function to activate side panel -->
-        <!-- Each <span> will be a simple white dash in this "hamburger menu" -->
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-
-      <!-- Sidebar -->
-      <aside id="sidebar">
-          <div class="profile">
-              <a href="/profile" style="text-decoration: none; color: inherit;">
-                  <img src="static/Profile_avatar_placeholder.png" alt="User">
-                  <p>u/Manul</p>
-              </a>
-          </div>
-
-          <nav>
-          <ul>
-            <li><a href="/"><strong><u>Home</u></strong></a></li> <!-- This element has strong and underline due to it being the current page selected -->
-            <li><a href="/?filter=popular">Popular</a></li> <!-- Pass arguments to the url to filter posts on the main page -->
-            <li><a href="/?filter=latest">Latest</a></li>
-
-            <li style="color: gray;">Subscriptions ▼</li>
-            <!-- This is a list of groups that the user is currently subscribed to.
-            It will change dynamically through the Backend -->
-            <a href="/g/HollowKnight">
-              <li>
-                <section>
-                  <img src="static/Group0_avatar_placeholder.jpg" alt="Group Icon">
-                  <h2>HollowKnight</h2>
-                </section>
-              </li>
-            </a>
-            <a href="/g/IITU">
-              <li>
-                <section>
-                  <img src="static/Group1_avatar_placeholder.png" alt="Group Icon">
-                  <h2>IITU</h2>
-                </section>
-              </li>
-            </a>
-
-          </ul>
+                <li class="mt-3 text-uppercase text-white-50 small">Subscriptions ▼</li>
+                <!-- This is a list of groups that the user is currently subscribed to.
+                It will change dynamically through the Backend -->
+                {% for sub in subs %}
+                <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
+                    <li>
+                        <section>
+                            <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon" onerror="this.src='/static/group_ava_placeholder.jpg';">
+                            <span>{{ sub }}</span>
+                        </section>
+                    </li>
+                </a>
+                {% endfor %}
+                <a href="/g/" class="d-flex align-items-center gap-2">
+                    <li>
+                        <section>
+                            <img src="/static/new_group_ava.jpg">
+                            <span>Create new Group</span>
+                        </section>
+                    </li>
+                </a>
+            </ul>
         </nav>
-      </aside>
+    </aside>
 
-      <!-- Header -->
-      <header style="position: sticky; background: #2e2e2e;">
-        <h1 style="">LOGO</h1>
-          <div class="search-bar">
-            <form>
-              <input type="submit" class="search-bar-icon" value="⌕">
-              <input type="text" placeholder="Search for any post...">
+    <!-- Header -->
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light" style="position: sticky; min-height: 90px;">
+      <div class="flex-grow-1 text-center d-none d-md-block">
+        <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO"></a>
+      </div>
+      <div class="search-bar" style="position:absolute; right: 1rem;">
+        <form class="d-flex align-items-center gap-2" action="/" method="get">
+          <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
+          <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
+        </form>
+      </div>
+    </header>
+
+    <div id="copyToast">
+        Failed to copy text
+    </div>
+
+    <div class="modal fade" id="deletionModal" tabindex="-1" role="dialog" aria-labelledby="deletionModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
+          </div>
+          <div class="modal-body" id="deletionModalBodyContent">
+              Do you want to remove this post?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();console.log(whatpost);">No</button>
+            <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts (will load from the Backend DB) -->
+    <main>
+        {% if search_users|length>0 %}
+        {% for user in search_users %}
+            <div class="search-figure">
+                <a href="/u/{{ user[0] }}"><img src="/uploads/u/{{ user[0].lower() }}/ava.jpg" onerror="this.src='/static/placeholder_ava.jpg';" alt="Avatar"></a>
+                <h2><a href="/u/{{ user[0] }}" class="text-danger text-decoration-none text-break">u/{{ user[0] }}</a></h2>
+            </div>
+        {% endfor %}
+        {% if not category %}
+            <form method="get" id="showmoreUsers">
+                {% if filter %}
+                <input type="hidden" name="filter" value="{{ filter }}">
+                {% endif %}
+                {% if query %}
+                <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                <input type="hidden" name="c" value="users">
+                <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;" onclick="document.getElementById('showmoreUsers').submit()">Show more users...</p>
             </form>
-          </div>
-      </header>
-
-      <!-- Posts (will load from the Backend DB) -->
-      <main>
-
+        {% endif %}
+        {% endif %}
+        {% if search_groups|length>0 %}
+        {% for group in search_groups %}
+            <div class="search-figure">
+                <a href="/g/{{ group[0] }}"><img src="/uploads/g/{{ group[0].lower() }}/ava.jpg" onerror="this.src='/static/group_ava_placeholder.jpg';" alt="Group avatar"></a>
+                <h2><a href="/g/{{ group[0] }}" class="text-danger text-decoration-none text-break">g/{{ group[0] }}</a></h2>
+            </div>
+        {% endfor %}
+        {% if not category %}
+            <form method="get" id="showmoreGroups">
+                {% if filter %}
+                <input type="hidden" name="filter" value="{{ filter }}">
+                {% endif %}
+                {% if query %}
+                <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                <input type="hidden" name="c" value="groups">
+                <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;" onclick="document.getElementById('showmoreGroups').submit()">Show more groups...</p>
+            </form>
+        {% endif %}
+        {% endif %}
+        {% if posts|length>0 %}
+        {% for post in posts %}
         <article>
-          <!-- Group of origin (avatar, name), upload date -->
-          <header>
-            <a href="/g/HollowKnight"><img src="static/Group0_avatar_placeholder.jpg" alt="Avatar"></a>
-            <h2><a href="/g/HollowKnight">g/HollowKnight</a></h2>
-            <h2>•</h2>
-            <h2>03.09.25</h2>
-          </header>
+            <!-- Group of origin (avatar, name), upload date -->
+            <header>
+                <a href="/g/{{ post['g'] }}"><img src="/uploads/g/{{ post['g'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/group_ava_placeholder.jpg';"></a>
+                <h2><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none text-break">g/{{ post['g'] }}</a></h2>
+                <span class="text-secondary">•</span>
+                <span class="text-secondary">{{ post['upload_date'] }}</span>
+            </header>
 
-          <!-- Post title, post content -->
-          <a href="/g/HollowKnight/comments/0">
-            <p>Silksong tomorrow!!11!1!</p>
-            <img src="static/Post0_img_placeholder.jpg" alt="Content" class="content-img">
-          </a>
+            <!-- Post title, post content -->
+            <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
+                <p class="postTitle">{{ post['title'] }}</p>
+                <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}" class="content-img">
+            </a>
 
-          <!-- Post rating, additional button (share a link) -->
-          <div class="post-footer" data-post-id="g/HollowKnight/0">
-            <div class="post-rating">
-              <span class="like-button">👍</span>
-              <span class="post-rating-number">25.4k</span>
-              <span class="dislike-button">👎</span>
+            <!-- Post rating, additional button (share a link) -->
+            <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
+                <div class="post-rating">
+                    <span id="like-button"  class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['liked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)" ><i class="bi bi-arrow-up"></i></span>
+                    <span id="post-rating-number" class="mx-2">{{ post['rating'] }}</span>
+                    <span id="dislike-button"  class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
+                </div>
+                <div class="post-additional">
+                    {% if login.lower() in post['who_rem'] %}
+                    <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
+                        <input type="hidden" name="postId" value="{{ post['id'] }}">
+                    </form>
+                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();console.log(whatpost);})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
+                    {% endif %}
+                    <span class="share-button ms-1" onclick="copyLink(event)" title="Copy the post link"><i class="bi bi-copy"></i></span>
+                </div>
             </div>
-            <div class="post-additional">
-              <span class="share-button">🔗</span>
-            </div>
-          </div>
         </article>
-
+        {% endfor %}
+        {% if query and not category %}
+            <form method="get" id="showmorePosts">
+                {% if filter %}
+                <input type="hidden" name="filter" value="{{ filter }}">
+                {% endif %}
+                {% if query %}
+                <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                <input type="hidden" name="c" value="posts">
+                <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;" onclick="document.getElementById('showmorePosts').submit()">Show more posts...</p>
+            </form>
+        {% endif %}
+        {% endif %}
+        {% if (not (page<=1 and 5*page>=total_pages)) and (not query or (query and category)) %}
+        <nav id="pageNavigator">
+            <form method="get">
+                {% if filter %}
+                <input type="hidden" name="filter" value="{{ filter }}">
+                {% endif %}
+                {% if query %}
+                <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                {% if category %}
+                <input type="hidden" name="c" value="{{ category }}">
+                {% endif %}
+                {% if page>1 %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}"><i class="bi bi-arrow-left"></i></button>
+                {% else %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}" disabled><i class="bi bi-arrow-left"></i></button>
+                {% endif %}
+                {% if 5*page<total_pages %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"><i class="bi bi-arrow-right"></i></button>
+                {% else %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}" disabled><i class="bi bi-arrow-right"></i></button>
+                {% endif %}
+            </form>
+        </nav>
+        {% endif %}
+        {% if posts|length <= 0 and search_users|length<=0 and search_groups|length<=0 %}
         <article>
-          <header>
-            <a href="/g/IITU"><img src="static/Group1_avatar_placeholder.png" alt="Avatar"></a>
-            <h2><a href="/g/IITU">g/IITU</a></h2>
-            <h2>•</h2>
-            <h2>10.09.25</h2>
-          </header>
-          <a href="/g/IITU/comments/0">
-          <p>🌟 “IITU Student Life Fair” ждёт вас! 🌟</p>
-          <img src="static/Post1_img_placeholder.jpg" alt="Content" class="content-img">
-          </a>
-          <div class="post-footer" data-post-id="g/IITU/0">
-            <div class="post-rating">
-              <span class="like-button">👍</span>
-              <span class="post-rating-number">25.4k</span>
-              <span class="dislike-button">👎</span>
-            </div>
-            <div class="post-additional">
-              <span class="share-button">🔗</span>
-            </div>
-          </div>
+            <figure>
+                <p class="text-danger">:^)</p>
+                <figcaption class="text-secondary">No posts found</figcaption>
+                <figcaption style="display: flex;" class="text-secondary">Find&nbsp;<a href="/?filter=popular" class="text-danger text-decoration-none">some </a>?</figcaption>
+            </figure>
         </article>
+        {% endif %}
+    </main>
 
-      </main>
-
-      <script>
-        function toggleMenu() {
-          document.getElementById("sidebar").classList.toggle("active");
-        }
-      </script>
-    </body>
-    </html>
+    <footer>
+        <p>&copy; 2025 IITU Life</p>
+    </footer>
+</div>
+    <script src="/static/js.js"></script>
+    <script>
+        socket.on('scs_change_rating_{{ login }}',data => {
+            const postId = data.postId.toString();
+            const new_rating = data.new_rating;
+            const what = data.what;
+            const clickedElementId = data.clickedElementId;
+            const parentElement = document.querySelector(`[data-post-id="${postId}"]`);
+            for (const child of parentElement.children){
+                if (child.className==="post-rating"){
+                    for (const c of child.children){
+                        if (c.id==="post-rating-number"){
+                            c.innerText=new_rating;
+                        }else if (c.id==="like-button"){
+                            if (clickedElementId==="like-button"){
+                                if (what>=1) {
+                                    c.className = "disabled-span-clicked";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }else if (clickedElementId==="dislike-button"){
+                                if (what<=-1) {
+                                    c.className = "disabled-span";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }
+                        }else if (c.id==="dislike-button"){
+                            if (clickedElementId==="like-button"){
+                                if (what>=1) {
+                                    c.className = "disabled-span";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }else if (clickedElementId==="dislike-button"){
+                                if (what<=-1) {
+                                    c.className = "disabled-span-clicked";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

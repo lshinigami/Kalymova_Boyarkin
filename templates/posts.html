@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Post page">
+    <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
+    <meta name="keywords" content="Weblog, blog, IITU, IT, Post">
+    <title>p/{{ post['id'] }}</title>
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/static/css.css" rel="stylesheet">
+    <script src="/static/socket.io.min.js"></script>
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <!-- Detect if PrivacyBadger/NoScript or AdBlocker disabled JavaScript -->
+    <noscript>
+        <style type="text/css">
+            #container {
+                display: none;
+            }
+        </style>
+        <div class="noscriptmsg">
+            You don't have javascript enabled. Good luck with that.
+        </div>
+    </noscript>
+</head>
+<body>
+<div id="container">
+    <!-- Sidebar toggle menu -->
+   <button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="text-center mb-4">
+            <a href="/u/{{ login }}"><img src="/uploads/u/{{ login.lower() }}/ava.jpg" alt="User Avatar"
+                 onerror="this.src='/static/placeholder_ava.jpg';"></a>
+            <a href="/u/{{ login }}"><p class="fw-bold mt-2">u/{{ login }}</p></a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/"
+                       class="deactivated-nav-txt">Home</a>
+                </li>
+                <li><a href="/?filter=popular"
+                       class="deactivated-nav-txt">Popular</a></li>
+                <li><a href="/?filter=latest"
+                       class="deactivated-nav-txt">Latest</a>
+                </li>
+
+                <li class="mt-3 text-uppercase text-white-50 small">Subscriptions ▼</li>
+                <!-- This is a list of groups that the user is currently subscribed to.
+                It will change dynamically through the Backend -->
+                {% for sub in subs %}
+                <a href="/g/{{ sub }}">
+                    <li>
+                        <section>
+                            <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon" onerror="this.src='/static/group_ava_placeholder.jpg';">
+                            <h2>{{ sub }}</h2>
+                        </section>
+                    </li>
+                </a>
+                {% endfor %}
+                <a href="/g/" class="d-flex align-items-center gap-2">
+                    <li>
+                        <section>
+                            <img src="/static/new_group_ava.jpg">
+                            <span>Create new Group</span>
+                        </section>
+                    </li>
+                </a>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Header -->
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light" style="position: sticky; min-height: 90px;">
+      <div class="flex-grow-1 text-center d-none d-md-block">
+        <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO"></a>
+      </div>
+      <div class="search-bar" style="position:absolute; right: 1rem;">
+        <form class="d-flex align-items-center gap-2" action="/" method="get">
+          <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
+          <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
+        </form>
+      </div>
+    </header>
+
+    <div id="copyToast">
+        Failed to copy text
+    </div>
+
+    <div class="modal fade" id="deletionModal" tabindex="-1" role="dialog" aria-labelledby="deletionModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
+          </div>
+          <div class="modal-body" id="deletionModalBodyContent">
+              Do you want to remove this post?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();console.log(whatpost);">No</button>
+            <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main>
+        <article>
+            <!-- Group of origin (avatar, name), upload date -->
+            <header>
+                <a href="/u/{{ post['u'] }}"><img src="/uploads/u/{{ post['u'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/placeholder_ava.jpg'"></a>
+                <h2><a href="/u/{{ post['u'] }}" class="text-danger text-decoration-none text-break">u/{{ post['u'] }}</a></h2>
+                <span class="text-secondary">•</span>
+                <h2><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none text-break">g/{{ post['g'] }}</a></h2>
+                <span class="text-secondary">•</span>
+                <span class="text-secondary">{{ post['upload_date'] }}</span>
+            </header>
+
+            <!-- Post title, post content -->
+            <p class="postTitle text-decoration-none text-dark text-break">{{ post['title'] }}</p>
+            <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" class="content-img" alt="" onerror="this.style.display='none';">
+            <p class="postDesc text-decoration-none text-dark text-break">{{ post['desc'] }}</p>
+
+            <!-- Post rating, additional button (share a link) -->
+            <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
+                <div class="post-rating">
+                    <span id="like-button" class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['liked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)" ><i class="bi bi-arrow-up"></i></span>
+                    <span id="post-rating-number" class="mx-2">{{ post['rating'] }}</span>
+                    <span id="dislike-button" class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
+                </div>
+                <div class="post-additional">
+                    {% if login.lower() in post['who_rem'] %}
+                    <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
+                        <input type="hidden" name="postId" value="{{ post['id'] }}">
+                    </form>
+                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();console.log(whatpost);})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+
+        <!-- Comments -->
+        <h2 class="text-secondary">Comments</h2>
+        {% if post['g'] in subs %}
+        <article>
+            <form method="POST" class="text-center">
+                <textarea id="comment" name="comment" rows="5" cols="40" placeholder="Comment..." class="form-control" style="resize: none;" required></textarea>
+                <button type="submit" class="btn btn-danger btn-lg text-white mt-2">Post</button>
+            </form>
+        </article>
+        {% endif %}
+        {% for comment in comments %}
+        <article>
+            <!-- Group of origin (avatar, name), upload date -->
+            <header>
+                <a href="/u/{{ comment['u'] }}"><img src="/uploads/u/{{ comment['u'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/placeholder_ava.jpg'"></a>
+                <h2><a href="/u/{{ comment['u'] }}" class="text-danger text-decoration-none text-break">u/{{ comment['u'] }}</a></h2>
+                <span class="text-secondary">• {{ comment['upload_date'] }}</span>
+            </header>
+
+            <!-- Comment content -->
+            <p class="commentText text-decoration-none text-dark text-break">{{ comment['desc'] }}</p>
+
+            <!-- Comment rating, additional button (delete a comment) -->
+            <!-- This is pretty complex to implement, so for now, it's gone -->
+            <div class="post-footer mt-3" data-comment-id="{{ comment['id'] }}">
+                <div class="post-rating">
+                    <span id="like-button" class="{{ 'enabled-span' if login.lower() not in comment['liked_by'] and login.lower() not in comment['disliked_by'] else 'disabled-span-clicked' if login.lower() in comment['liked_by'] else 'disabled-span' }}" onclick="send_change_rating_com(event)" ><i class="bi bi-arrow-up"></i></span>
+                    <span id="post-rating-number" class="mx-2">{{ comment['rating'] }}</span>
+                    <span id="dislike-button" class="{{ 'enabled-span' if login.lower() not in comment['liked_by'] and login.lower() not in comment['disliked_by'] else 'disabled-span-clicked' if login.lower() in comment['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating_com(event)"><i class="bi bi-arrow-down"></i></span>
+                </div>
+                <div class="post-additional">
+                    {% if login.lower() in comment['who_rem'] %}
+                    <form method="POST" id="removePost_{{ comment['id'] }}" style="display: none;">
+                        <input type="hidden" name="commentId" value="{{ comment['id'] }}">
+                    </form>
+                    <span class="delete-comment" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this comment?`;deletionModal.show();console.log(whatpost);})({{ comment['id'] }})" title="Delete the comment"><i class="bi bi-trash"></i></span>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+        {% if (not (page<=1 and 5*page>=total_pages)) %}
+        <nav id="pageNavigator">
+            <form method="get">
+                {% if page>1 %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}"><i class="bi bi-arrow-left"></i></button>
+                {% else %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}" disabled><i class="bi bi-arrow-left"></i></button>
+                {% endif %}
+                {% if 5*page<total_pages %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"><i class="bi bi-arrow-right"></i></button>
+                {% else %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}" disabled><i class="bi bi-arrow-right"></i></button>
+                {% endif %}
+            </form>
+        </nav>
+        {% endif %}
+        {% if comments|length <= 0 %}
+        <article>
+            <figure>
+                <p class="text-danger">:)</p>
+                <figcaption class="text-secondary">No comments found</figcaption>
+            </figure>
+        </article>
+        {% endif %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 IITU Life</p>
+    </footer>
+</div>
+    <script src="/static/js.js"></script>
+    <script>
+        function linkifyMentions() {
+            const mentionRegex = /\/u\/[\w-]+(?=\W|$)/g;
+            const commentTexts = document.querySelectorAll('.commentText');
+            commentTexts.forEach(commentText => {
+                commentText.innerHTML = commentText.textContent.replace(mentionRegex, match => {
+                    return `<a class="text-decoration-none text-danger" href="${match}">${match}</a>`;
+                });
+            });
+            const postTitles = document.querySelectorAll('.postTitle');
+            postTitles.forEach(postTitle => {
+                postTitle.innerHTML = postTitle.textContent.replace(mentionRegex, match => {
+                    return `<a class="text-decoration-none text-danger" href="${match}">${match}</a>`;
+                });
+            });
+            const postDescs = document.querySelectorAll('.postDesc');
+            postDescs.forEach(postDesc => {
+                postDesc.innerHTML = postDesc.textContent.replace(mentionRegex, match => {
+                    return `<a class="text-decoration-none text-danger" href="${match}">${match}</a>`;
+                });
+            });
+        }
+        document.addEventListener('DOMContentLoaded', linkifyMentions);
+        socket.on('scs_change_rating_{{ login }}',data => {
+            const postId = data.postId.toString();
+            const new_rating = data.new_rating;
+            const what = data.what;
+            const clickedElementId = data.clickedElementId;
+            const parentElement = document.querySelector(`[data-post-id="${postId}"]`);
+            for (const child of parentElement.children){
+                if (child.className==="post-rating"){
+                    for (const c of child.children){
+                        if (c.id==="post-rating-number"){
+                            c.innerText=new_rating;
+                        }else if (c.id==="like-button"){
+                            if (clickedElementId==="like-button"){
+                                if (what>=1) {
+                                    c.className = "disabled-span-clicked";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }else if (clickedElementId==="dislike-button"){
+                                if (what<=-1) {
+                                    c.className = "disabled-span";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }
+                        }else if (c.id==="dislike-button"){
+                            if (clickedElementId==="like-button"){
+                                if (what>=1) {
+                                    c.className = "disabled-span";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }else if (clickedElementId==="dislike-button"){
+                                if (what<=-1) {
+                                    c.className = "disabled-span-clicked";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+        socket.on('scs_change_rating_com_{{ login }}',data => {
+            const commentId = data.commentId.toString();
+            const new_rating = data.new_rating;
+            const what = data.what;
+            const clickedElementId = data.clickedElementId;
+            const parentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+            for (const child of parentElement.children){
+                if (child.className==="post-rating"){
+                    for (const c of child.children){
+                        if (c.id==="post-rating-number"){
+                            c.innerText=new_rating;
+                        }else if (c.id==="like-button"){
+                            if (clickedElementId==="like-button"){
+                                if (what>=1) {
+                                    c.className = "disabled-span-clicked";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }else if (clickedElementId==="dislike-button"){
+                                if (what<=-1) {
+                                    c.className = "disabled-span";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }
+                        }else if (c.id==="dislike-button"){
+                            if (clickedElementId==="like-button"){
+                                if (what>=1) {
+                                    c.className = "disabled-span";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }else if (clickedElementId==="dislike-button"){
+                                if (what<=-1) {
+                                    c.className = "disabled-span-clicked";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+        function send_change_rating_com(event) {
+            const clickedElement = event.target.parentElement;
+            const parentElement = clickedElement.parentElement;
+            const parentId = parentElement.parentElement.getAttribute('data-comment-id');
+            let what;
+            if (clickedElement.id==="like-button"){
+                if (clickedElement.className==='enabled-span'){
+                    what = 1;
+                }else if (clickedElement.className==='disabled-span'){
+                    what = 2;
+                }else if (clickedElement.className==='disabled-span-clicked'){
+                    what = -1;
+                }
+            }else if (clickedElement.id==="dislike-button"){
+                if (clickedElement.className==='enabled-span'){
+                    what = -1;
+                }else if (clickedElement.className==='disabled-span'){
+                    what = -2;
+                }else if (clickedElement.className==='disabled-span-clicked'){
+                    what = 1;
+                }
+            }
+            socket.emit('change_rating_com', { commentId: parentId, what: what, clickedElementId: clickedElement.id });
+        }
+    </script>
+</body>
+</html>
