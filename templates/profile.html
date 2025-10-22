@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="User profile page">
+    <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
+    <meta name="keywords" content="Weblog, blog, IITU, IT, Profile">
+    <title>u/{{ login }}</title>
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/static/css.css" rel="stylesheet">
+    <style>
+        section.profile-info {
+            position: relative;
+            background-color: #fff;
+            border-left: 5px solid #c62828;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: auto !important;
+        }
+        .image-wrapper {
+			position: relative;
+			display: inline-block;
+			cursor: pointer;
+		}
+
+        figure img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #c62828;
+        }
+
+        .image-wrapper img {
+            object-fit: cover;
+			transition: opacity 0.3s ease;
+        }
+        .overlay {
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			background: rgba(0, 0, 0, 0.4);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			opacity: 0;
+			transition: opacity 0.3s ease;
+		}
+
+        .overlay i {
+			color: white;
+			font-size: 2rem;
+		}
+
+		.image-wrapper:hover .overlay {
+			opacity: 1;
+		}
+
+        figcaption {
+            margin-top: 1rem;
+            font-size: 1.3rem;
+            color: #c62828;
+        }
+
+        form label {
+            text-align: left;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        form input {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 0.6rem;
+        }
+
+        form input:focus {
+            border-color: #c62828;
+            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.25);
+        }
+
+        form button {
+            background-color: #c62828;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem;
+            transition: background 0.3s;
+        }
+
+        form button:hover {
+            background-color: #b71c1c;
+        }
+
+        @media (max-width: 768px) {
+            section.profile-info {
+                border-width: 2px;
+                padding: 1rem 0;
+            }
+        }
+    </style>
+    <script src="/static/socket.io.min.js"></script>
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <!-- Detect if PrivacyBadger or AdBlocker disabled JavaScript -->
+    <noscript>
+        <style type="text/css">
+            #container {
+                display: none;
+            }
+        </style>
+        <div class="noscriptmsg">
+            You don't have javascript enabled. Good luck with that.
+        </div>
+    </noscript>
+</head>
+<body>
+    <div id="container">
+    <!-- Sidebar toggle menu -->
+    <button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="text-center mb-4">
+            <a href="/u/{{ clogin }}"><img src="/uploads/u/{{ clogin.lower() }}/ava.jpg" alt="User Avatar"
+                 onerror="this.src='/static/placeholder_ava.jpg';" class="mb-2"></a>
+            <a href="/u/{{ clogin }}"><p class="fw-bold mt-2">u/{{ clogin }}</p></a>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="/"
+                       class="deactivated-nav-txt">Home</a>
+                </li>
+                <li><a href="/?filter=popular"
+                       class="deactivated-nav-txt">Popular</a></li>
+                <li><a href="/?filter=latest"
+                       class="deactivated-nav-txt">Latest</a>
+                </li>
+
+                <li class="mt-3 text-uppercase text-white-50 small">Subscriptions ▼</li>
+                <!-- This is a list of groups that the user is currently subscribed to.
+                It will change dynamically through the Backend -->
+                {% for sub in subs %}
+                <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
+                    <li>
+                        <section>
+                            <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon" onerror="this.src='/static/group_ava_placeholder.jpg';">
+                            <span>{{ sub }}</span>
+                        </section>
+                    </li>
+                </a>
+                {% endfor %}
+                <a href="/g/" class="d-flex align-items-center gap-2">
+                    <li>
+                        <section>
+                            <img src="/static/new_group_ava.jpg">
+                            <span>Create new Group</span>
+                        </section>
+                    </li>
+                </a>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Header -->
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light" style="position: sticky; min-height: 90px;">
+      <div class="flex-grow-1 text-center d-none d-md-block">
+          <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO"></a>
+      </div>
+      <div class="search-bar" style="position:absolute; right: 1rem;">
+        <form class="d-flex align-items-center gap-2" action="/" method="get">
+          <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
+          <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
+        </form>
+      </div>
+    </header>
+
+        <div id="copyToast">
+        Failed to copy text
+    </div>
+
+        <div class="modal fade" id="deletionModal" tabindex="-1" role="dialog" aria-labelledby="deletionModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
+          </div>
+          <div class="modal-body" id="deletionModalBodyContent">
+              Do you want to remove this post?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();console.log(whatpost);">No</button>
+            <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main>
+        <section class="profile-info">
+            <figure>
+                {% if clogin.lower()==login.lower() %}
+                <form id="avatarForm" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="fileInput" name="avatar" style="display: none;" onchange="submitForm()" accept="image/*">
+                    <div class="image-wrapper" onclick="document.getElementById('fileInput').click();">
+                        <img id="avatarImage"
+                         src="/uploads/u/{{ login.lower() }}/ava.jpg"
+                         alt="User avatar"
+                         onerror="this.src='/static/placeholder_ava.jpg';">
+                        <div class="overlay">
+                            <i class="bi bi-plus-lg"></i>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <img src="/uploads/u/{{ login.lower() }}/ava.jpg" alt="User avatar" onerror="this.src='/static/placeholder_ava.jpg';">
+                {% endif %}
+                <figcaption class="fw-bold">u/{{ login }}</figcaption>
+            </figure>
+
+            <!-- Profile edit form -->
+            {% if clogin.lower()==login.lower() %}
+            <form method="POST" class="logout-btn">
+                <button type="submit" name="logout" class="btn w-100"><i class="bi bi-box-arrow-right"></i></button>
+            </form>
+            <form method="POST" class="mt-4 mx-auto" style="max-width:400px;">
+                <div class="mb-3 text-start">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" {% if error==True %} style="border: 2px red solid;" {% endif %} id="email" name="email" value="{{ cemail }}" class="form-control" required>
+                </div>
+
+                <div class="mb-3 text-start">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" {% if error==True %} style="border: 2px red solid;" {% endif %} id="password" name="password" class="form-control" placeholder="Enter new password">
+                </div>
+
+                <button type="submit" class="btn btn-outline-danger">Save</button>
+            </form>
+            {% endif %}
+        </section>
+
+        <!-- Profile Posts -->
+        {% for post in posts %}
+        <article>
+            <!-- Group of origin (avatar, name), upload date -->
+            <header>
+                <a href="/g/{{ post['g'] }}"><img src="/uploads/g/{{ post['g'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/group_ava_placeholder.jpg';"></a>
+                <h2><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none text-break">g/{{ post['g'] }}</a></h2>
+                <span class="text-secondary">•</span>
+                <span class="text-secondary">{{ post['upload_date'] }}</span>
+            </header>
+
+            <!-- Post title, post content -->
+            <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
+                <p class="postTitle">{{ post['title'] }}</p>
+                <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}" class="text-decoration-none text-break content-img">
+            </a>
+
+            <!-- Post rating, additional button (share a link) -->
+            <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
+                <div class="post-rating">
+                    <span id="like-button" class="{{ 'enabled-span' if clogin.lower() not in post['liked_by'] and clogin.lower() not in post['disliked_by'] else 'disabled-span-clicked' if clogin.lower() in post['liked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)" ><i class="bi bi-arrow-up"></i></span>
+                    <span id="post-rating-number"  class="mx-2">{{ post['rating'] }}</span>
+                    <span id="dislike-button" class="{{ 'enabled-span' if clogin.lower() not in post['liked_by'] and clogin.lower() not in post['disliked_by'] else 'disabled-span-clicked' if clogin.lower() in post['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
+                </div>
+                <div class="post-additional">
+                    {% if login.lower() in post['who_rem'] %}
+                    <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
+                        <input type="hidden" name="postId" value="{{ post['id'] }}">
+                    </form>
+                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();console.log(whatpost);})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
+                    {% endif %}
+                    <span class="share-button ms-1" onclick="copyLink(event)" title="Copy the post link"><i class="bi bi-copy"></i></span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+        {% if (not (page<=1 and 5*page>=total_pages)) %}
+        <nav id="pageNavigator">
+            <form method="get">
+                {% if page>1 %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}"><i class="bi bi-arrow-left"></i></button>
+                {% else %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}" disabled><i class="bi bi-arrow-left"></i></button>
+                {% endif %}
+                {% if 5*page<total_pages %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"><i class="bi bi-arrow-right"></i></button>
+                {% else %}
+                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}" disabled><i class="bi bi-arrow-right"></i></button>
+                {% endif %}
+            </form>
+        </nav>
+        {% endif %}
+        {% if posts|length <= 0 %}
+        <article>
+            <figure>
+                <p class="text-danger">:)</p>
+                <figcaption class="text-secondary">No posts found</figcaption>
+                <figcaption style="display: flex;" class="text-secondary">Go&nbsp;<a href="/?filter=popular" class="text-danger text-decoration-none">home </a>?</figcaption>
+            </figure>
+        </article>
+        {% endif %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 IITU Life</p>
+    </footer>
+        </div>
+    <script src="/static/js.js"></script>
+    <script>
+        socket.on('scs_change_rating_{{ clogin }}',data => {
+            const postId = data.postId.toString();
+            const new_rating = data.new_rating;
+            const what = data.what;
+            const clickedElementId = data.clickedElementId;
+            const parentElement = document.querySelector(`[data-post-id="${postId}"]`);
+            for (const child of parentElement.children){
+                if (child.className==="post-rating"){
+                    for (const c of child.children){
+                        if (c.id==="post-rating-number"){
+                            c.innerText=new_rating;
+                        }else if (c.id==="like-button"){
+                            if (clickedElementId==="like-button"){
+                                if (what>=1) {
+                                    c.className = "disabled-span-clicked";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }else if (clickedElementId==="dislike-button"){
+                                if (what<=-1) {
+                                    c.className = "disabled-span";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }
+                        }else if (c.id==="dislike-button"){
+                            if (clickedElementId==="like-button"){
+                                if (what>=1) {
+                                    c.className = "disabled-span";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }else if (clickedElementId==="dislike-button"){
+                                if (what<=-1) {
+                                    c.className = "disabled-span-clicked";
+                                }else{
+                                    c.className = 'enabled-span';
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+        {% if clogin.lower()==login.lower() %}
+        function submitForm() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length > 0) {
+                document.getElementById('avatarForm').submit();
+            }
+        }
+        {% endif %}
+    </script>
+
+</body>
+</html>
