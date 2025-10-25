@@ -1,5 +1,5 @@
 # IITU Life
-<img src="screenshot.png" style="width: 100%;">
+<img src="https://github.com/user-attachments/assets/e825ea46-8d86-4ac1-bae5-05e46e3945e1" style="width: 100%;">
 
 A Weblog for students, teachers, administration of Internation Information Technology University, but not only!
 
