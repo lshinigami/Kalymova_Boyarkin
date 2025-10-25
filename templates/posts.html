@@ -51,11 +51,11 @@
                 <!-- This is a list of groups that the user is currently subscribed to.
                 It will change dynamically through the Backend -->
                 {% for sub in subs %}
-                <a href="/g/{{ sub }}">
+                <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
                     <li>
                         <section>
                             <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon" onerror="this.src='/static/group_ava_placeholder.jpg';">
-                            <h2>{{ sub }}</h2>
+                            <span>{{ sub }}</span>
                         </section>
                     </li>
                 </a>
@@ -95,11 +95,11 @@
           <div class="modal-header">
             <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
           </div>
-          <div class="modal-body" id="deletionModalBodyContent">
+          <div class="modal-body text-break" id="deletionModalBodyContent">
               Do you want to remove this post?
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();console.log(whatpost);">No</button>
+            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();">No</button>
             <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
           </div>
         </div>
@@ -111,17 +111,17 @@
             <!-- Group of origin (avatar, name), upload date -->
             <header>
                 <a href="/u/{{ post['u'] }}"><img src="/uploads/u/{{ post['u'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/placeholder_ava.jpg'"></a>
-                <h2><a href="/u/{{ post['u'] }}" class="text-danger text-decoration-none text-break">u/{{ post['u'] }}</a></h2>
+                <h2 style="white-space: nowrap; overflow-x: clip; max-width: 25%;"><a href="/u/{{ post['u'] }}" class="text-danger text-decoration-none">u/{{ post['u'] }}</a></h2>
                 <span class="text-secondary">•</span>
-                <h2><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none text-break">g/{{ post['g'] }}</a></h2>
+                <h2 style="white-space: nowrap; overflow-x: clip; max-width: 25%;"><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none">g/{{ post['g'] }}</a></h2>
                 <span class="text-secondary">•</span>
                 <span class="text-secondary">{{ post['upload_date'] }}</span>
             </header>
 
             <!-- Post title, post content -->
             <p class="postTitle text-decoration-none text-dark text-break">{{ post['title'] }}</p>
-            <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" class="content-img" alt="" onerror="this.style.display='none';">
-            <p class="postDesc text-decoration-none text-dark text-break">{{ post['desc'] }}</p>
+            <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" class="content-img" alt="" onerror="this.style.display='none';"> <!--style="object-fit: cover; max-width: 896px; max-height: 896px;">-->
+            <p class="postDesc text-decoration-none text-dark text-break" style="white-space: pre-line;">{{ post['desc'] }}</p>
 
             <!-- Post rating, additional button (share a link) -->
             <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
@@ -135,7 +135,7 @@
                     <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
                         <input type="hidden" name="postId" value="{{ post['id'] }}">
                     </form>
-                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();console.log(whatpost);})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
+                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
                     {% endif %}
                 </div>
             </div>
@@ -146,7 +146,7 @@
         {% if post['g'] in subs %}
         <article>
             <form method="POST" class="text-center">
-                <textarea id="comment" name="comment" rows="5" cols="40" placeholder="Comment..." class="form-control" style="resize: none;" required></textarea>
+                <textarea id="comment" name="comment" rows="5" cols="40" placeholder="Comment..." class="form-control" style="resize: none;" maxlength="4096" required></textarea>
                 <button type="submit" class="btn btn-danger btn-lg text-white mt-2">Post</button>
             </form>
         </article>
@@ -156,12 +156,13 @@
             <!-- Group of origin (avatar, name), upload date -->
             <header>
                 <a href="/u/{{ comment['u'] }}"><img src="/uploads/u/{{ comment['u'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/placeholder_ava.jpg'"></a>
-                <h2><a href="/u/{{ comment['u'] }}" class="text-danger text-decoration-none text-break">u/{{ comment['u'] }}</a></h2>
-                <span class="text-secondary">• {{ comment['upload_date'] }}</span>
+                <h2 style="white-space: nowrap; overflow-x: clip; max-width: 50%;"><a href="/u/{{ comment['u'] }}" class="text-danger text-decoration-none">u/{{ comment['u'] }}</a></h2>
+                <span class="text-secondary">•</span>
+                <span class="text-secondary">{{ comment['upload_date'] }}</span>
             </header>
 
             <!-- Comment content -->
-            <p class="commentText text-decoration-none text-dark text-break">{{ comment['desc'] }}</p>
+            <p class="commentText text-decoration-none text-dark text-break" style="white-space: pre-line;">{{ comment['desc'] }}</p>
 
             <!-- Comment rating, additional button (delete a comment) -->
             <!-- This is pretty complex to implement, so for now, it's gone -->
@@ -176,7 +177,7 @@
                     <form method="POST" id="removePost_{{ comment['id'] }}" style="display: none;">
                         <input type="hidden" name="commentId" value="{{ comment['id'] }}">
                     </form>
-                    <span class="delete-comment" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this comment?`;deletionModal.show();console.log(whatpost);})({{ comment['id'] }})" title="Delete the comment"><i class="bi bi-trash"></i></span>
+                    <span class="delete-comment" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this comment?`;deletionModal.show();})({{ comment['id'] }})" title="Delete the comment"><i class="bi bi-trash"></i></span>
                     {% endif %}
                 </div>
             </div>
@@ -215,7 +216,7 @@
     <script src="/static/js.js"></script>
     <script>
         function linkifyMentions() {
-            const mentionRegex = /\/u\/[\w-]+(?=\W|$)/g;
+            const mentionRegex = /u\/[\w-]+(?=\W|$)/g;
             const commentTexts = document.querySelectorAll('.commentText');
             commentTexts.forEach(commentText => {
                 commentText.innerHTML = commentText.textContent.replace(mentionRegex, match => {
@@ -236,52 +237,7 @@
             });
         }
         document.addEventListener('DOMContentLoaded', linkifyMentions);
-        socket.on('scs_change_rating_{{ login }}',data => {
-            const postId = data.postId.toString();
-            const new_rating = data.new_rating;
-            const what = data.what;
-            const clickedElementId = data.clickedElementId;
-            const parentElement = document.querySelector(`[data-post-id="${postId}"]`);
-            for (const child of parentElement.children){
-                if (child.className==="post-rating"){
-                    for (const c of child.children){
-                        if (c.id==="post-rating-number"){
-                            c.innerText=new_rating;
-                        }else if (c.id==="like-button"){
-                            if (clickedElementId==="like-button"){
-                                if (what>=1) {
-                                    c.className = "disabled-span-clicked";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }else if (clickedElementId==="dislike-button"){
-                                if (what<=-1) {
-                                    c.className = "disabled-span";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }
-                        }else if (c.id==="dislike-button"){
-                            if (clickedElementId==="like-button"){
-                                if (what>=1) {
-                                    c.className = "disabled-span";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }else if (clickedElementId==="dislike-button"){
-                                if (what<=-1) {
-                                    c.className = "disabled-span-clicked";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        });
-        socket.on('scs_change_rating_com_{{ login }}',data => {
+        socket.on('scs_change_rating_com',data => {
             const commentId = data.commentId.toString();
             const new_rating = data.new_rating;
             const what = data.what;

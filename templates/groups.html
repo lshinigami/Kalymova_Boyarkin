@@ -7,172 +7,10 @@
     <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
     <meta name="keywords" content="Weblog, blog, IITU, IT, Group">
     <title>g/{{ group }}</title>
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/static/css.css" rel="stylesheet">
     <style>
-        /* Reset default values */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #2e2e2e;
-            color: white;
-            overflow-x: hidden;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* Header */
-        header {
-            top: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem 2rem;
-            z-index: 34;
-        }
-
-        header h1 {
-            display: flex;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .search-bar {
-            display: flex;
-            position: absolute;
-            right: 0;
-            padding: 1rem 2rem;
-        }
-
-        .search-bar input {
-            background: #1b1b1b;
-            color: gray;
-            font-style: italic;
-            padding: 0.5rem 0.8rem;
-            border-radius: 6px;
-            border: none;
-            outline: none;
-            width: 250px;
-        }
-
-        .search-bar .search-bar-icon {
-            background: none;
-            border: none;
-            color: inherit;
-            padding: 0;
-            font: inherit;
-            cursor: pointer;
-            width: 20px;
-        }
-
-        /* Sidebar */
-        aside {
-            position: fixed;
-            top: 0;
-            left: -260px;
-            width: 260px;
-            height: 100%;
-            background: #1b1b1b;
-            padding: 1rem;
-            transition: left 0.3s ease-in-out;
-            overflow-y: auto;
-            z-index: 69;
-        }
-
-        aside.active {
-            left: 0;
-        }
-
-        aside .profile {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        aside .profile img {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            margin-bottom: 0.5rem;
-        }
-
-        aside nav ul {
-            list-style: none;
-        }
-
-        aside nav ul li {
-            padding: 0.8rem 0;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        aside nav ul li #activated-nav-txt {
-            text-decoration: underline;
-            font-weight: bold;
-        }
-
-        aside nav ul li #deactivated-nav-txt {
-            text-decoration: none;
-            font-weight: normal;
-        }
-
-        aside nav ul li:hover {
-            color: lightskyblue;
-        }
-
-        aside nav ul li section {
-            display: flex;
-            justify-content: flex-start;
-            gap: 0.8rem;
-            align-items: center;
-        }
-
-        aside nav ul li section img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        aside nav ul li section h2 {
-            font-size: 1rem;
-            color: white;
-        }
-
-        /* Sidebar toggle menu */
-        .menu-toggle {
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            width: 35px;
-            height: 35px;
-            background: #1b1b1b;
-            border-radius: 50%;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 621;
-            display: inline-block;
-            padding-top: 6.5px;
-            padding-left: 7.5px;
-        }
-
-        .menu-toggle span {
-            display: block;
-            width: 20px;
-            height: 2px;
-            background: white;
-            margin: 4px 0;
-        }
-
         /* Profile */
         section.banner {
             position: relative;
@@ -183,22 +21,34 @@
             background: #1b1b1b;
             border-radius: 15px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
         }
 
         section.banner img {
             width: 100%;
             height: 100%;
+            border-radius: 15px;
         }
 
         figure {
             margin: 0;
         }
 
-        section.banner .group-name-plate{
+        section.banner .group-name-plate {
             position: absolute;
             display: flex;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.7);
             bottom: 0;
+            width: 100%;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            padding: 1rem;
+        }
+
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
             width: 100%;
         }
 
@@ -206,8 +56,48 @@
             position: relative;
             align-items: center;
             gap: 15px;
-            width: 50%;
             display: flex;
+        }
+
+        .banner-columns {
+            display: flex;
+            flex-direction: column;
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+
+        .banner-columns .group-name {
+            font-size: 2rem;
+        }
+
+        .banner-columns .group-subs {
+            font-size: 1rem;
+        }
+
+        .image-wrapper img {
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay i {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .image-wrapper:hover .overlay {
+            opacity: 1;
         }
 
         section.banner figure img {
@@ -217,224 +107,133 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
-        figcaption {
-            margin-top: 1rem;
-            font-size: 1.3rem;
-            font-weight: bold;
+        button .short-text {
+            display: none;
         }
 
-        label {
-            text-align: left;
-            font-size: 0.9rem;
-            color: #ccc;
+        #attach-btn:hover {
+            color: white !important;
         }
 
-        input[type="email"],
-        input[type="password"] {
-            padding: 0.6rem;
-            border: none;
-            border-radius: 8px;
-            background: #2e2e2e;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            border: 1px solid lightskyblue;
-        }
-
-        button {
-            padding: 0.7rem;
-            border: none;
-            border-radius: 8px;
-            {% if role=='unknown' %}
-            background: lightskyblue;
-            {% else %}
-            background: #2e2e2e;
-            {% endif %}
-            color: #1b1b1b;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            {% if role!='unknown' %}
-            transition: background 0.3s ease;
-            {% endif %}
-        }
-        {% if role=='unknown' %}
-        button:hover {
-            background: deepskyblue;
-        }
-        {% endif %}
-
-        /* Posts (main) */
-        main {
-            margin: 2rem auto;
-            max-width: 800px;
-            padding: 1rem;
-        }
-
-        article {
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        article header {
+        .user-card {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 0.8rem;
-            margin-bottom: 1rem;
-            padding: 0;
+            justify-content: space-between;
+            background-color: #fff;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            color: #c62828;
+            transition: all 0.2s ease;
         }
 
-        article header img {
+        /* Avatar + name container */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Avatar style */
+        .user-info img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
-        article header h2 {
-            font-size: 1rem;
-            color: #aaa;
+        /* Checkbox hidden */
+        .user-card input[type="checkbox"] {
+            display: none;
         }
 
-        article p {
-            margin: 0.5rem 0;
+        /* The right-side text (hidden by default) */
+        .extra-text {
+            display: none;
+            font-weight: 600;
         }
 
-        article img.content-img {
-            width: 100%;
-            border-radius: 15px;
-            margin-top: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        .user-card.checked {
+            background-color: #c62828;
+            color: #fff;
+            border-color: #c62828;
         }
 
-        article figure {
-            display: grid;
-            align-items: center;
-            justify-content: center;
-        }
-        article figure p {
-            font-size: 100px;
-            color: dimgray;
-            display: grid;
-            justify-content: center;
-            margin-bottom: 40px;
+        .user-card.checked .extra-text {
+            display: block;
+            color: #fff;
         }
 
-        article figure figcaption {
-            color: #aaa;
-            font-size: 30px;
-            display: grid;
-            justify-content: center;
-            margin-bottom: 20px;
+        /* Hover effect */
+        .user-card:hover {
+            border-color: #c62828;
         }
 
-        .post-footer {
-            background: #3a3a3a;
-            margin-top: 0.8rem;
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            color: #aaa;
-        }
+        @media (max-width: 768px) {
+            main {
+                margin-top: 1rem;
+            }
 
-        .post-footer .enabled-span {
-            cursor: pointer;
-            user-select: none;
-            color: #aaaaaa;
-        }
+            section.banner figure img {
+                width: 70px;
+                height: 70px;
+            }
 
-        .post-footer .disabled-span {
-            cursor: pointer;
-            user-select: none;
-            color: #1b1b1b;
-        }
+            section.banner figure button {
+                font-size: 0.9rem;
+            }
 
-        .post-footer .disabled-span-clicked {
-            cursor: pointer;
-            user-select: none;
-            color: lightskyblue;
-        }
+            button .full-text {
+                display: none;
+            }
 
-        .post-footer .post-rating {
-            gap: 15px;
-            display: flex;
-            align-items: center;
-        }
+            button .short-text {
+                display: inline;
+            }
 
-        .post-footer .post-additional {
-            justify-content: flex-end;
-        }
+            .banner-columns {
+                padding: 0 !important;
+            }
 
-        footer {
-            margin-top: 3rem;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #aaa;
-        }
+            .banner-columns .group-name {
+                font-size: 1.5rem;
+            }
 
-        #usermodOverlay{
-            position: fixed;
-              display: none;
-              width: 100%;
-              height: 100%;
-              top: 0;
-              left: 0;
-              right: 0;
-              bottom: 0;
-              background-color: rgba(0,0,0,0.2);
-              z-index: 926;
-        }
+            .banner-columns .group-subs {
+                font-size: 0.7rem;
+            }
 
-        #usermodList {
-            position: absolute;
-            padding: 5px;
-            background-color: white;
-              top: 50%;
-              left: 50%;
-              color: black;
-              transform: translate(-50%,-50%);
-              -ms-transform: translate(-50%,-50%);
+            section.banner .group-name-plate {
+                padding: 0.5rem;
+            }
         }
     </style>
     <script src="/static/socket.io.min.js"></script>
-
-    <!-- Probably will be used later to detect when JS is disabled by using Noscript, PrivacyBadger or anything like that -->
-
-    <!-- <noscript>
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <!-- Detect if PrivacyBadger or AdBlocker disabled JavaScript -->
+    <noscript>
         <style type="text/css">
-            .pagecontainer {
+            #container {
                 display: none;
             }
         </style>
         <div class="noscriptmsg">
             You don't have javascript enabled. Good luck with that.
         </div>
-    </noscript> -->
+    </noscript>
 </head>
 <body>
-<div class=".pagecontainer">
+<div id="container">
     <!-- Sidebar toggle menu -->
-    <div class="menu-toggle" onclick="toggleMenu()"> <!-- Needs a JS function to activate side panel -->
-        <!-- Each <span> will be a simple white dash in this "hamburger menu" -->
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
+    <button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
 
     <!-- Sidebar -->
     <aside id="sidebar">
-        <div class="profile">
+        <div class="text-center mb-4">
             <a href="/u/{{ login }}"><img src="/uploads/u/{{ login.lower() }}/ava.jpg" alt="User Avatar"
-                 onerror="this.src='/static/placeholder_ava.jpg';"></a>
-            <a href="/u/{{ login }}"><p>u/{{ login }}</p></a>
+                                          onerror="this.src='/static/placeholder_ava.jpg';" class="mb-2"></a>
+            <a href="/u/{{ login }}"><p class="fw-bold mt-2">u/{{ login }}</p></a>
         </div>
         <nav>
             <ul>
@@ -443,29 +242,29 @@
                 </li>
                 <li><a href="/?filter=popular"
                        id="deactivated-nav-txt">Popular</a></li>
-                <!-- Pass arguments to the url to filter posts on the main page -->
                 <li><a href="/?filter=latest"
                        id="deactivated-nav-txt">Latest</a>
                 </li>
 
-                <li style="color: gray;">Subscriptions ▼</li>
+                <li class="mt-3 text-uppercase text-white-50 small">Subscriptions ▼</li>
                 <!-- This is a list of groups that the user is currently subscribed to.
                 It will change dynamically through the Backend -->
                 {% for sub in subs %}
-                <a href="/g/{{ sub }}">
-                    <li>
-                        <section>
-                            <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon" onerror="this.src='/static/group_ava_placeholder.jpg';">
-                            <h2>{{ sub }}</h2>
-                        </section>
-                    </li>
-                </a>
+                    <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
+                        <li>
+                            <section>
+                                <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon"
+                                     onerror="this.src='/static/group_ava_placeholder.jpg';">
+                                <span>{{ sub }}</span>
+                            </section>
+                        </li>
+                    </a>
                 {% endfor %}
-                <a href="/g/">
+                <a href="/g/" class="d-flex align-items-center gap-2">
                     <li>
                         <section>
                             <img src="/static/new_group_ava.jpg">
-                            <h2>Create new Group</h2>
+                            <span>Create new Group</span>
                         </section>
                     </li>
                 </a>
@@ -474,256 +273,347 @@
     </aside>
 
     <!-- Header -->
-    <header style="position: sticky; background: #2e2e2e;">
-        <h1 style="">LOGO</h1>
-        <div class="search-bar">
-            <form> <!-- Don't exactly know what to do with it, yet -->
-                <input type="submit" class="search-bar-icon" value="⌕">
-                <input type="text" placeholder="Search for any post...">
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+            style="position: sticky; min-height: 90px;">
+        <div class="flex-grow-1 text-center d-none d-md-block">
+            <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px"
+                                            alt="LOGO"></a>
+        </div>
+        <div class="search-bar" style="position:absolute; right: 1rem;">
+            <form class="d-flex align-items-center gap-2" action="/" method="get">
+                <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
+                <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
             </form>
         </div>
     </header>
 
+    <div id="copyToast">
+        Failed to copy text
+    </div>
+
+    <div class="modal fade" id="deletionModal" tabindex="-1" role="dialog" aria-labelledby="deletionModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
+                </div>
+                <div class="modal-body text-break" id="deletionModalBodyContent">
+                    Do you want to remove this post?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();">
+                        No
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="unsubscribeModal" tabindex="-1" role="dialog" aria-labelledby="unsubscribeModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="unsubscribeModalLabel">Are you sure?</h5>
+                </div>
+                <div class="modal-body text-break" id="unsubscribeModalBodyContent" style="white-space: pre-line;">Do
+                    you want to unsubscribe from this group?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            onclick="document.getElementById('unsubscribeModalLabel').innerText='Are you sure?';document.getElementById('unsubscribeModalBodyContent').textContent=`Do you want to unsubscribe from this group?`;unsubscribeModal.hide();">
+                        No
+                    </button>
+                    <button type="button" class="btn btn-danger"
+                            onclick="document.getElementById('subscribeForm').submit();">Yes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if role=='creat' %}
+        <div class="modal fade" id="usermodModal" tabindex="-1" role="dialog" aria-labelledby="usermodModalLabel"
+             data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="usermodModalLabel">Select Moderators</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="(()=>{
+                  let usermodSubmit = document.getElementById('usermodSubmit');
+                  if (usermodSubmit){
+                      usermodSubmit.click();
+                  }
+              })()"></button>
+                    </div>
+                    <div class="modal-body" style="height: 200px; overflow-y: auto;">
+                        {% if usermods_mods|length>0 or usermods_users|length>0 %}
+                            <form id="usermodList" method="post">
+                                {% for usermod in usermods_mods %}
+                                    <label class="user-card">
+                                        <input type="checkbox" name="usermods" value="{{ usermod }}"
+                                               id="usermod_{{ usermod }}" checked>
+                                        <div class="user-info">
+                                            <img src="/uploads/u/{{ usermod.lower() }}/ava.jpg"
+                                                 onerror="this.src='/static/placeholder_ava.jpg';" alt="Avatar">
+                                            <span style="white-space: nowrap; overflow-x: clip; max-width: 70%;">{{ usermod }}</span>
+                                        </div>
+                                        <span class="extra-text">MOD</span>
+                                    </label>
+                                {% endfor %}
+                                {% for usermod in usermods_users %}
+                                    <label class="user-card">
+                                        <input type="checkbox" name="usermods" value="{{ usermod }}"
+                                               id="usermod_{{ usermod }}">
+                                        <div class="user-info">
+                                            <img src="/uploads/u/{{ usermod.lower() }}/ava.jpg"
+                                                 onerror="this.src='/static/placeholder_ava.jpg';" alt="Avatar">
+                                            <span style="white-space: nowrap; overflow-x: clip; max-width: 70%;">{{ usermod }}</span>
+                                        </div>
+                                        <span class="extra-text">MOD</span>
+                                    </label>
+                                {% endfor %}
+                                <input id="usermodSubmit" name="usermod" type="submit" style="display:none">
+                            </form>
+                        {% else %}
+                            <span style="white-space: nowrap; overflow-x: clip; max-width: 90%;">You are the only user :(</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     <main>
         <section class="banner">
-            <!-- !!Needs changing functionality implementation for banner and ava!! -->
             {% if role=='creat' or role=='moder' %}
-                <form id="bannerForm" method="POST" enctype="multipart/form-data">
-                    <input type="file" id="BannerfileInput" name="banner" style="display: none;" onchange="document.getElementById('bannerForm').submit();" accept="image/*">
-                    <img id="bannerImage"
-                         src="/uploads/g/{{ group.lower() }}/banner.jpg"
-                         alt="Banner"
-                         onerror="this.src='/static/banner_placeholder.jpg';"
-                         onclick="document.getElementById('BannerfileInput').click();"
-                         style="cursor: pointer;">
+                <form id="bannerForm" method="POST" enctype="multipart/form-data" style="width:100%">
+                    <input type="file" id="BannerfileInput" name="banner" style="display: none;"
+                           onchange="document.getElementById('bannerForm').submit();" accept="image/*">
+                    <div class="image-wrapper" onclick="document.getElementById('BannerfileInput').click();">
+                        <img id="bannerImage"
+                             src="/uploads/g/{{ group.lower() }}/banner.jpg"
+                             alt="Banner"
+                             onerror="this.src='/static/banner_placeholder.jpg';">
+                        <div class="overlay" style="border-radius: 15px">
+                            <i class="bi bi-plus-lg"></i>
+                        </div>
+                    </div>
                 </form>
             {% else %}
-            <img src="/uploads/g/{{ group.lower() }}/banner.jpg" alt="Banner" onerror="this.src='/static/banner_placeholder.jpg';">
+                <img src="/uploads/g/{{ group.lower() }}/banner.jpg" alt="Banner"
+                     onerror="this.src='/static/banner_placeholder.jpg';">
+            {% endif %}
+            {% if role=='creat' %}
+                <button style="position: absolute; top: 0.5rem; right: 0.5rem; text-shadow: -1px -1px 0 black,  1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black; font-size: 1.5rem;"
+                        onclick="usermodModal.show()" class="btn bg-transparent text-white btn-lg p-2" type="button"><i
+                        class="bi bi-three-dots-vertical"></i></button>
             {% endif %}
             <div class="group-name-plate">
-                <figure style="justify-content: flex-start; left:15px;">
+                <figure style="justify-content: flex-start; width: 70%">
                     {% if role=='creat' or role=='moder' %}
                         <form id="avatarForm" method="POST" enctype="multipart/form-data">
-                            <input type="file" id="AvatarfileInput" name="avatar" style="display: none;" onchange="document.getElementById('avatarForm').submit();" accept="image/*">
-                            <img id="AvatarImage"
-                                 src="/uploads/g/{{ group.lower() }}/ava.jpg"
-                                 alt="Avatar"
-                                 onerror="this.src='/static/group_ava_placeholder.jpg';"
-                                 onclick="document.getElementById('AvatarfileInput').click();"
-                                 style="cursor: pointer;">
+                            <input type="file" id="AvatarfileInput" name="avatar" style="display: none;"
+                                   onchange="document.getElementById('avatarForm').submit();" accept="image/*">
+                            <div class="image-wrapper" onclick="document.getElementById('AvatarfileInput').click();">
+                                <img id="AvatarImage"
+                                     src="/uploads/g/{{ group.lower() }}/ava.jpg"
+                                     alt="Avatar"
+                                     onerror="this.src='/static/group_ava_placeholder.jpg';">
+                                <div class="overlay">
+                                    <i class="bi bi-plus-lg"></i>
+                                </div>
+                            </div>
                         </form>
                     {% else %}
-                    <img src="/uploads/g/{{ group.lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/group_ava_placeholder.jpg';">
+                        <img src="/uploads/g/{{ group.lower() }}/ava.jpg" alt="Avatar"
+                             onerror="this.src='/static/group_ava_placeholder.jpg';">
                     {% endif %}
-                    <p>g/{{ group }}</p>
+                    <div class="banner-columns" style="align-items: flex-start;">
+                        <span class="group-name text-white">g/{{ group }}</span>
+                        <span class="group-subs text-white">{{ subscribers }} Subscriber(s)</span>
+                    </div>
                 </figure>
-                <figure style="justify-content: flex-end; right:15px;">
-                    <form method="POST">
-                        <button name="sub" type="submit" value="Subscribe">
+                <figure style="justify-content: flex-end; width: 30%">
+                    <div style="align-items: flex-end; align-self: {{ 'flex-end; padding-bottom: 0.5rem' if role!='unknown' else 'center' }}; gap: 0.5rem;"
+                         class="banner-columns">
+                        <form method="POST" id="subscribeForm">
+                            <input type="hidden" name="sub">
+                        </form>
+                        <button class="btn btn-{{ 'danger text-white' if role=='unknown' else 'secondary text-secondary-emphasis' }} btn-lg"
+                                name="sub" type="button" value="Subscribe" onclick="((role) => {
+                                if (role==='unknown'){
+                                document.getElementById('subscribeForm').submit();
+                                }else{
+                                let unsubscribe_text='Do you want to unsubscribe from /g/{{ group }}?'
+                                if (role==='creat'){
+                                document.getElementById('unsubscribeModalLabel').innerText='Are you REALLY sure?';
+                                document.getElementById('unsubscribeModalBodyContent').classList.add('text-danger','fw-bold');
+                                unsubscribe_text+='\n\nTHIS WILL DELETE THE GROUP!!'
+                                }else if (role==='moder'){
+                                document.getElementById('unsubscribeModalBodyContent').classList.add('fw-bold');
+                                unsubscribe_text+='\n\nYou WILL lose your role!'
+                                }
+                                document.getElementById('unsubscribeModalBodyContent').textContent=unsubscribe_text;unsubscribeModal.show();
+                                }
+                                })('{{ role }}')">
                             {% if role=='unknown' %}
-                            Subscribe
+                                <span class="full-text">Subscribe</span>
                             {% else %}
-                            Subscribed
+                                <span class="full-text">Subscribed</span>
                             {% endif %}
+                            <span class="short-text"><i class="bi bi-plus-lg"></i></span>
                         </button>
-                    </form>
-                    <!--{% if role!='creat' %}
-                    <form method="POST">
-                        <button name="sub" type="submit" value="Subscribe">
-                            {% if role=='unknown' %}
-                            Subscribe
-                            {% else %}
-                            Subscribed
-                            {% endif %}
-                        </button>
-                    </form>
-                    {% else %}
-                    <button name="sub" type="submit" value="Subscribe" disabled style="cursor: default">Subscribed</button>
-                    {% endif %}-->
-                    {% if role!='unknown' %}
-                    <p>Role: {{ 'Creator' if role=='creat' else 'Moderator' if role=='moder' else 'User' }}</p>
-                    {% endif %}
+                        {% if role!='unknown' %}
+                            <span class="group-subs text-white">Role:
+                                {{ 'Creator' if role=='creat' else 'Moderator' if role=='moder' else 'User' }}</span>
+                        {% endif %}
+                    </div>
                 </figure>
             </div>
         </section>
-        {% if role=='creat' %}
-        <div id="usermodOverlay">
-            <form id="usermodList" method="post">
-                <input type="submit" onclick="document.getElementById('usermodOverlay').style.display = 'none';" value="X"><br>
-                {% for usermod in usermods_mods %}
-                    <label for="usermod_{{ usermod }}">u/{{ usermod }} <input type="checkbox" id="usermod_{{ usermod }}" name="usermods" value="{{ usermod }}" checked></label><br>
-                {% endfor %}
-                {% for usermod in usermods_users %}
-                    <label for="usermod_{{ usermod }}">u/{{ usermod }} <input type="checkbox" id="usermod_{{ usermod }}" name="usermods" value="{{ usermod }}"></label><br>
-                {% endfor %}
-            </form>
-        </div>
-        <button onclick="document.getElementById('usermodOverlay').style.display = 'block';">Moderators</button>
-        {% endif %}
         {% if group in subs %}
-        <article>
-            <form method="POST" enctype="multipart/form-data">
-                <label>Title: <input type="text" id="title" name="title" required></label><br><br>
-                <label>Description: <textarea id="desc" name="desc" rows="5" cols="40" placeholder="Description..."></textarea></label><br><br>
-                <label>Attach image: <input type="file" id="attach" name="attach" accept="image/*"></label><br><br>
-                <button type="submit" value="Send">Send</button>
-            </form>
-        </article>
+            <article>
+                <form method="POST" enctype="multipart/form-data" class="text-center">
+                    <input type="text" id="title" name="title" class="form-control" style="margin-bottom: 0.5rem"
+                           placeholder="Title" maxlength="100" required>
+                    <textarea id="desc" name="desc" rows="5" cols="40" placeholder="Description..." class="form-control"
+                              style="resize: none;" maxlength="4096"></textarea>
+                    <span id='attachment-name' class="text-secondary text-break" style="display:none;"></span>
+                    <span id="attachment-remove" class="text-secondary" style="cursor: pointer; display:none;" onclick="(() => {
+                        attach_file.value = '';
+                        attachment_name.innerText='';
+                        attachment_name.style.display='none';
+                        attachment_remove_btn.style.display='none';
+                        attach_btn.classList.remove('btn-secondary','text-secondary-emphasis');
+                        attach_btn.classList.add('btn-outline-danger','text-danger');})()"><i
+                            class="bi bi-x"></i></span>
+                    <button type="button" class="btn btn-outline-danger btn-lg text-danger mt-2" id="attach-btn"
+                            onclick="document.getElementById('attach').click()"><i class="bi bi-link-45deg"></i> Attach
+                    </button>
+                    <input type="file" id="attach" name="attach" accept="image/*" class="form-control"
+                           style="display: none" onchange="(() => {
+                    if (attach_file.files.length > 0) {
+                        attachment_name.innerText=attach_file.files[0].name;
+                        attachment_name.style.display='inline-block';
+                        attachment_remove_btn.style.display='inline-block';
+                        attach_btn.classList.add('btn-secondary','text-secondary-emphasis');
+                        attach_btn.classList.remove('btn-outline-danger','text-danger');
+                    }else{
+                        attachment_name.innerText='';
+                        attachment_name.style.display='none';
+                        attachment_remove_btn.style.display='none';
+                        attach_btn.classList.remove('btn-secondary','text-secondary-emphasis');
+                        attach_btn.classList.add('btn-outline-danger','text-danger');
+                    }
+                })();">
+                    <button type="submit" value="Post" class="btn btn-danger btn-lg text-white mt-2">Post</button>
+                </form>
+            </article>
         {% endif %}
         <!-- Profile Posts -->
         {% for post in posts %}
-        <article>
-            <!-- Group of origin (avatar, name), upload date -->
-            <header>
-                <a href="/u/{{ post['u'] }}"><img src="/uploads/u/{{ post['u'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/placeholder_ava.jpg'"></a>
-                <h2><a href="/u/{{ post['u'] }}">u/{{ post['u'] }}</a></h2>
-                <h2>•</h2>
-                <h2>{{ post['upload_date'] }}</h2>
-            </header>
+            <article>
+                <!-- Group of origin (avatar, name), upload date -->
+                <header>
+                    <a href="/u/{{ post['u'] }}"><img src="/uploads/u/{{ post['u'].lower() }}/ava.jpg" alt="Avatar"
+                                                      onerror="this.src='/static/placeholder_ava.jpg'"></a>
+                    <h2 style="white-space: nowrap; overflow-x: clip; max-width: 50%;"><a href="/u/{{ post['u'] }}"
+                                                                                          class="text-danger text-decoration-none">u/{{ post['u'] }}</a>
+                    </h2>
+                    <span class="text-secondary">•</span>
+                    <span class="text-secondary">{{ post['upload_date'] }}</span>
+                </header>
 
-            <!-- Post title, post content -->
-            <a href="/p/{{ post['id'] }}">
-                <p class="postTitle">{{ post['title'] }}</p>
-                <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}" class="content-img">
-            </a>
+                <!-- Post title, post content -->
+                <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
+                    <p class="postTitle">{{ post['title'] }}</p>
+                    <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}"
+                         class="text-decoration-none text-break content-img" style="white-space: pre-line; object-fit: cover; max-width: 896px; max-height: 896px;">
+                </a>
 
-            <!-- Post rating, additional button (share a link) -->
-            <div class="post-footer" data-post-id="{{ post['id'] }}">
-                <div class="post-rating">
-                    <span id="like-button" style="font-size: 20px;" class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['liked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)" >↑</span>
-                    <span id="post-rating-number">{{ post['rating'] }}</span>
-                    <span id="dislike-button" style="font-size: 20px;" class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)">↓</span>
+                <!-- Post rating, additional button (share a link) -->
+                <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
+                    <div class="post-rating">
+                        <span id="like-button" class="
+                                {{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['liked_by'] else 'disabled-span' }}"
+                              onclick="send_change_rating(event)"><i class="bi bi-arrow-up"></i></span>
+                        <span id="post-rating-number" class="mx-2">{{ post['rating'] }}</span>
+                        <span id="dislike-button" class="
+                                {{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['disliked_by'] else 'disabled-span' }}"
+                              onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
+                    </div>
+                    <div class="post-additional">
+                        {% if login.lower() in post['who_rem'] %}
+                            <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
+                                <input type="hidden" name="postId" value="{{ post['id'] }}">
+                            </form>
+                            <span class="delete-post" style="cursor:pointer;"
+                                  onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();})({{ post['id'] }})"
+                                  title="Delete the post"><i class="bi bi-trash"></i></span>
+                        {% endif %}
+                        <span class="share-button ms-1" onclick="copyLink(event)" title="Copy the post link"><i
+                                class="bi bi-copy"></i></span>
+                    </div>
                 </div>
-                <div class="post-additional">
-                    {% if login.lower() in post['who_rem'] %}
-                    <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
-                        <input type="hidden" name="postId" value="{{ post['id'] }}">
-                    </form>
-                    <span class="delete-post" style="cursor:pointer;" onclick='submitDeletePost({{ post["id"] }})'>X</span>
-                    {% endif %}
-                    <span onclick="copyLink(event)" class="share-button">🔗</span>
-                </div>
-            </div>
-        </article>
+            </article>
         {% endfor %}
+        {% if (not (page<=1 and 5*page>=total_pages)) %}
+            <nav id="pageNavigator">
+                <form method="get">
+                    {% if page>1 %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p"
+                                value="{{ page-1 if page>1 else 1 }}"><i class="bi bi-arrow-left"></i></button>
+                    {% else %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p"
+                                value="{{ page-1 if page>1 else 1 }}" disabled><i class="bi bi-arrow-left"></i></button>
+                    {% endif %}
+                    {% if 5*page<total_pages %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"><i
+                                class="bi bi-arrow-right"></i></button>
+                    {% else %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"
+                                disabled><i class="bi bi-arrow-right"></i></button>
+                    {% endif %}
+                </form>
+            </nav>
+        {% endif %}
         {% if posts|length <= 0 %}
-        <article>
-            <figure>
-                <p>:)</p>
-                <figcaption>No posts found</figcaption>
-                <figcaption style="display: flex;">Go to&nbsp;<a href="/g/{{ group }}?p=1">first page </a>?</figcaption>
-            </figure>
-        </article>
+            <article>
+                <figure>
+                    <p class="text-danger">:)</p>
+                    <figcaption class="text-secondary">No posts found</figcaption>
+                    <figcaption style="display: flex;" class="text-secondary">Go&nbsp;<a href="/?filter=popular"
+                                                                                         class="text-danger text-decoration-none">home </a>?
+                    </figcaption>
+                </figure>
+            </article>
         {% endif %}
     </main>
 
     <footer>
-        <p>&copy; 2025 Weblog Project</p>
+        <p>&copy; 2025 IITU Life</p>
     </footer>
-    <script>
-        function linkifyMentions() {
-            const mentionRegex = /@[\w-]+(?=\W|$)/g;
-            const postTitles = document.querySelectorAll('.postTitle');
-            postTitles.forEach(postTitle => {
-                postTitle.innerHTML = postTitle.textContent.replace(mentionRegex, match => {
-                    const mention = match.substring(1);
-                    return `<a href="/u/${mention}">${match}</a>`;
-                });
-            });
-        }
-        document.addEventListener('DOMContentLoaded', linkifyMentions);
-        const socket = io();
-        socket.on('flr_change_rating', data => {
-            window.location.href = '/u/';
-        })
-        socket.on('scs_change_rating_{{ login }}',data => {
-            const postId = data.postId.toString();
-            const new_rating = data.new_rating;
-            const what = data.what;
-            const clickedElementId = data.clickedElementId;
-            const parentElement = document.querySelector(`[data-post-id="${postId}"]`);
-            for (const child of parentElement.children){
-                if (child.className==="post-rating"){
-                    for (const c of child.children){
-                        if (c.id==="post-rating-number"){
-                            c.innerText=new_rating;
-                        }else if (c.id==="like-button"){
-                            if (clickedElementId==="like-button"){
-                                if (what>=1) {
-                                    c.className = "disabled-span-clicked";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }else if (clickedElementId==="dislike-button"){
-                                if (what<=-1) {
-                                    c.className = "disabled-span";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }
-                        }else if (c.id==="dislike-button"){
-                            if (clickedElementId==="like-button"){
-                                if (what>=1) {
-                                    c.className = "disabled-span";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }else if (clickedElementId==="dislike-button"){
-                                if (what<=-1) {
-                                    c.className = "disabled-span-clicked";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        });
-        function toggleMenu() {
-            document.getElementById("sidebar").classList.toggle("active");
-        }
-        function submitDeletePost(post_id) {
-            document.getElementById(`removePost_${post_id}`).submit();
-        }
-        async function copyLink(event) {
-            const clickedElement = event.target;
-            const parentElement = clickedElement.parentElement;
-            const parentId = parentElement.parentElement.getAttribute('data-post-id');
-            try {
-                await navigator.clipboard.writeText(window.location.href.match(/http[s]*:\/\/[0-9a-zA-Z-.:]+/)+'/p/'+parentId);
-                alert('Text copied to clipboard!');
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                alert('Failed to copy text.');
-            }
-        }
-        function send_change_rating(event) {
-            const clickedElement = event.target;
-            const parentElement = clickedElement.parentElement;
-            const parentId = parentElement.parentElement.getAttribute('data-post-id');
-            let what;
-            if (clickedElement.id==="like-button"){
-                if (clickedElement.className==='enabled-span'){
-                    what = 1;
-                }else if (clickedElement.className==='disabled-span'){
-                    what = 2;
-                }else if (clickedElement.className==='disabled-span-clicked'){
-                    what = -1;
-                }
-            }else if (clickedElement.id==="dislike-button"){
-                if (clickedElement.className==='enabled-span'){
-                    what = -1;
-                }else if (clickedElement.className==='disabled-span'){
-                    what = -2;
-                }else if (clickedElement.className==='disabled-span-clicked'){
-                    what = 1;
-                }
-            }
-            socket.emit('change_rating', { postId: parentId, what: what, clickedElementId: clickedElement.id });
-        }
-    </script>
+
 </div>
+<script src="/static/js.js"></script>
+<script>
+    var attach_btn = document.getElementById('attach-btn');
+    var attach_file = document.getElementById('attach');
+    var attachment_name = document.getElementById('attachment-name')
+    var attachment_remove_btn = document.getElementById('attachment-remove')
+    const unsubscribeModal = new bootstrap.Modal(document.getElementById('unsubscribeModal'));
+    const usermodModal = new bootstrap.Modal(document.getElementById('usermodModal'));
+    document.querySelectorAll('.user-card input[type="checkbox"]').forEach(cb => {
+        cb.closest('.user-card').classList.toggle('checked', cb.checked);
+
+        cb.addEventListener('change', () => {
+            cb.closest('.user-card').classList.toggle('checked', cb.checked);
+        });
+    });
+</script>
 </body>
 </html>

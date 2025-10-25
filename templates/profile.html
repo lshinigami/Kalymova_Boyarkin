@@ -195,11 +195,11 @@
           <div class="modal-header">
             <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
           </div>
-          <div class="modal-body" id="deletionModalBodyContent">
+          <div class="modal-body text-break" id="deletionModalBodyContent">
               Do you want to remove this post?
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();console.log(whatpost);">No</button>
+            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();">No</button>
             <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
           </div>
         </div>
@@ -236,7 +236,7 @@
             <form method="POST" class="mt-4 mx-auto" style="max-width:400px;">
                 <div class="mb-3 text-start">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" {% if error==True %} style="border: 2px red solid;" {% endif %} id="email" name="email" value="{{ cemail }}" class="form-control" required>
+                    <input type="email" {% if error==True %} style="border: 2px red solid;" {% endif %} id="email" name="email" value="{{ cemail }}" class="form-control" maxlength="89" required>
                 </div>
 
                 <div class="mb-3 text-start">
@@ -255,7 +255,7 @@
             <!-- Group of origin (avatar, name), upload date -->
             <header>
                 <a href="/g/{{ post['g'] }}"><img src="/uploads/g/{{ post['g'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/group_ava_placeholder.jpg';"></a>
-                <h2><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none text-break">g/{{ post['g'] }}</a></h2>
+                <h2 style="white-space: nowrap; overflow-x: clip; max-width: 50%;"><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none">g/{{ post['g'] }}</a></h2>
                 <span class="text-secondary">•</span>
                 <span class="text-secondary">{{ post['upload_date'] }}</span>
             </header>
@@ -263,7 +263,7 @@
             <!-- Post title, post content -->
             <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
                 <p class="postTitle">{{ post['title'] }}</p>
-                <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}" class="text-decoration-none text-break content-img">
+                <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}" class="text-decoration-none text-break content-img" style="white-space: pre-line; object-fit: cover; max-width: 896px; max-height: 896px;">
             </a>
 
             <!-- Post rating, additional button (share a link) -->
@@ -274,11 +274,11 @@
                     <span id="dislike-button" class="{{ 'enabled-span' if clogin.lower() not in post['liked_by'] and clogin.lower() not in post['disliked_by'] else 'disabled-span-clicked' if clogin.lower() in post['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
                 </div>
                 <div class="post-additional">
-                    {% if login.lower() in post['who_rem'] %}
+                    {% if clogin.lower() in post['who_rem'] %}
                     <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
                         <input type="hidden" name="postId" value="{{ post['id'] }}">
                     </form>
-                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();console.log(whatpost);})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
+                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
                     {% endif %}
                     <span class="share-button ms-1" onclick="copyLink(event)" title="Copy the post link"><i class="bi bi-copy"></i></span>
                 </div>
@@ -318,51 +318,6 @@
         </div>
     <script src="/static/js.js"></script>
     <script>
-        socket.on('scs_change_rating_{{ clogin }}',data => {
-            const postId = data.postId.toString();
-            const new_rating = data.new_rating;
-            const what = data.what;
-            const clickedElementId = data.clickedElementId;
-            const parentElement = document.querySelector(`[data-post-id="${postId}"]`);
-            for (const child of parentElement.children){
-                if (child.className==="post-rating"){
-                    for (const c of child.children){
-                        if (c.id==="post-rating-number"){
-                            c.innerText=new_rating;
-                        }else if (c.id==="like-button"){
-                            if (clickedElementId==="like-button"){
-                                if (what>=1) {
-                                    c.className = "disabled-span-clicked";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }else if (clickedElementId==="dislike-button"){
-                                if (what<=-1) {
-                                    c.className = "disabled-span";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }
-                        }else if (c.id==="dislike-button"){
-                            if (clickedElementId==="like-button"){
-                                if (what>=1) {
-                                    c.className = "disabled-span";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }else if (clickedElementId==="dislike-button"){
-                                if (what<=-1) {
-                                    c.className = "disabled-span-clicked";
-                                }else{
-                                    c.className = 'enabled-span';
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        });
         {% if clogin.lower()==login.lower() %}
         function submitForm() {
             const fileInput = document.getElementById('fileInput');

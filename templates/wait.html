@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Oops an error has occured!">
+    <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
+    <meta name="keywords" content="Weblog, blog, IITU, IT, Gaming, News, Articles, Various">
+    <title>Home</title>
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/static/css.css" rel="stylesheet">
+    <script src="/static/socket.io.min.js"></script>
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <!-- Detect if PrivacyBadger or AdBlocker disabled JavaScript -->
+    <noscript>
+        <style type="text/css">
+            #container {
+                display: none;
+            }
+        </style>
+        <div class="noscriptmsg">
+            You don't have javascript enabled. Good luck with that.
+        </div>
+    </noscript>
+</head>
+<body>
+<div id="container">
+
+    <!-- Header -->
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light" style="position: sticky; min-height: 90px;">
+      <div class="flex-grow-1 text-center d-none d-md-block">
+          <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
+      </div>
+    </header>
+
+    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Error!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-break" id="errorModalBodyContent">
+                    Something went wrong!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Okay">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <article>
+            <figure>
+                <div class="d-flex justify-content-center">
+                <div class="spinner-border" style="width: 5rem; height: 5rem; margin: 2rem;" role="status">
+                </div>
+                </div>
+                <figcaption class="text-secondary text-break">Processing request...</figcaption>
+                <figcaption style="display: flex;" class="text-secondary text-break">Please wait! You will be automatically redirected.</figcaption>
+            </figure>
+        </article>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 IITU Life</p>
+    </footer>
+</div>
+<script>
+    const socket = io();
+    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    socket.on('done_{{ login.lower() }}', data => {
+        if (data["error"]===true){
+            if (data["reason"]==="NSFW") {
+                document.getElementById('errorModalBodyContent').innerText = 'NSFW content is not allowed!';
+            }else if (data["reason"]==="BADFILE") {
+                document.getElementById('errorModalBodyContent').innerText = 'The image is corrupted!';
+            }
+            errorModal.show();
+            document.getElementById('errorModal').addEventListener('hidden.bs.modal', event => {
+              window.location.href = data["redirect"];
+            });
+        }else{
+            window.location.href = data["redirect"];
+        }
+    });
+    </script>
+</body>
+</html>
