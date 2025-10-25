@@ -54,7 +54,7 @@
                     <li>
                         <section>
                             <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon" onerror="this.src='/static/group_ava_placeholder.jpg';">
-                            <h2>{{ sub }}</h2>
+                            <span>{{ sub }}</span>
                         </section>
                     </li>
                 </a>
@@ -88,8 +88,8 @@
         <article>
             <figure>
                 <p class="text-danger">:o</p>
-                <figcaption class="text-secondary">/404/</figcaption>
-                <figcaption style="display: flex;" class="text-secondary">This page does not exist!</figcaption>
+                <figcaption class="text-secondary">/{{ error }}/</figcaption>
+                <figcaption style="display: flex;" class="text-secondary">{{ errormsg }}</figcaption>
             </figure>
         </article>
     </main>
@@ -97,12 +97,11 @@
     <footer>
         <p>&copy; 2025 IITU Life</p>
     </footer>
-
-    <script>
+</div>
+<script>
         function toggleMenu() {
             document.getElementById("sidebar").classList.toggle("active");
         }
     </script>
-</div>
 </body>
 </html>

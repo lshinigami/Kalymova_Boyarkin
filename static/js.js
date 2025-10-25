@@ -2,7 +2,7 @@ const deletionModal = new bootstrap.Modal(document.getElementById('deletionModal
 let whatpost = -1;
 
 function linkifyMentions() {
-    const mentionRegex = /\/u\/[\w-]+(?=\W|$)/g;
+    const mentionRegex = /u\/[\w-]+(?=\W|$)/g;
     const postTitles = document.querySelectorAll('.postTitle');
     postTitles.forEach(postTitle => {
         postTitle.innerHTML = postTitle.textContent.replace(mentionRegex, match => {
@@ -16,6 +16,7 @@ const socket = io();
 socket.on('flr_change_rating', data => {
     window.location.href = '/u/';
 })
+
 function toggleMenu() {
     document.getElementById("sidebar").classList.toggle("active");
 }
@@ -68,3 +69,49 @@ function send_change_rating(event) {
     }
     socket.emit('change_rating', {postId: parentId, what: what, clickedElementId: clickedElement.id});
 }
+
+socket.on('scs_change_rating', data => {
+    const postId = data.postId.toString();
+    const new_rating = data.new_rating;
+    const what = data.what;
+    const clickedElementId = data.clickedElementId;
+    const parentElement = document.querySelector(`[data-post-id="${postId}"]`);
+    for (const child of parentElement.children) {
+        if (child.className === "post-rating") {
+            for (const c of child.children) {
+                if (c.id === "post-rating-number") {
+                    c.innerText = new_rating;
+                } else if (c.id === "like-button") {
+                    if (clickedElementId === "like-button") {
+                        if (what >= 1) {
+                            c.className = "disabled-span-clicked";
+                        } else {
+                            c.className = 'enabled-span';
+                        }
+                    } else if (clickedElementId === "dislike-button") {
+                        if (what <= -1) {
+                            c.className = "disabled-span";
+                        } else {
+                            c.className = 'enabled-span';
+                        }
+                    }
+                } else if (c.id === "dislike-button") {
+                    if (clickedElementId === "like-button") {
+                        if (what >= 1) {
+                            c.className = "disabled-span";
+                        } else {
+                            c.className = 'enabled-span';
+                        }
+                    } else if (clickedElementId === "dislike-button") {
+                        if (what <= -1) {
+                            c.className = "disabled-span-clicked";
+                        } else {
+                            c.className = 'enabled-span';
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+});

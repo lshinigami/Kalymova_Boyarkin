@@ -1,28 +1,50 @@
+import logging
 import os
 import re
 import secrets
 import shutil
 import sqlite3
+import time
+import warnings
 from datetime import datetime
+from threading import Thread
 
 from PIL import Image
 from argon2 import PasswordHasher
 from argon2.exceptions import *
-from flask import Flask, render_template, request, redirect, send_from_directory
+from flask import Flask, render_template, request, redirect, send_from_directory, url_for
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user
 from flask_socketio import SocketIO
+from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 
+warnings.filterwarnings('ignore', category=UserWarning)
+logging.getLogger('tensorflow').disabled = True
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+from nsfw_detector import predict
+
+os.makedirs('model',exist_ok=True)
+
+if not os.path.exists('model/saved_model.h5'):
+    print("The model is missing! Please download the model first.")
+    print("https://github.com/GantMan/nsfw_model/releases/tag/1.2.0")
+    print("The folder /model should contain the file saved_model.h5, which is the model itself.")
+    exit(-1)
+
+model = predict.load_model('model/saved_model.h5')
 app = Flask(__name__)
 # app.config['REMEMBER_COOKIE_DURATION']=timedelta(days=10)
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 app.secret_key = secrets.token_hex(32)
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 socketio = SocketIO(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 ph = PasswordHasher()
+
+active_threads = {}
 
 necessary_folders=['uploads','uploads/g','uploads/p','uploads/u','database']
 for nfolder in necessary_folders:
@@ -53,8 +75,8 @@ with sqlite3.connect('database/db.db') as conn:
                        uploader_group_id INTEGER NOT NULL,
                        uploader_user_id INTEGER NOT NULL,
                        upload_date VARCHAR(50) NOT NULL,
-                       title VARCHAR(50) NOT NULL,
-                       desc VARCHAR(250),
+                       title VARCHAR(100) NOT NULL,
+                       desc VARCHAR(4096),
                        attach_img VARCHAR(250),
                        rating INTEGER,
                        FOREIGN KEY(uploader_group_id) REFERENCES groups(id),
@@ -70,7 +92,7 @@ with sqlite3.connect('database/db.db') as conn:
     cursor.execute('''
                    CREATE TABLE IF NOT EXISTS comments(
                        id INTEGER PRIMARY KEY,
-                       desc VARCHAR(250),
+                       desc VARCHAR(4096),
                        upload_date VARCHAR(50) NOT NULL,
                        user_id INTEGER,
                        post_id INTEGER,
@@ -115,11 +137,18 @@ def is_safe_folder(folder_name, base_dir, whatdo="exist"):
         return True
     return None
 
-def img_process(image, what="ava"):
-    #Also it would probably be a good idea to implement some kind of "virus check" for safety
+def img_conversion(image, what="ava"):
     image = Image.open(image)
     image = image.convert('RGB')
     width, height = image.size
+    if what=='post':
+        if width==height:
+            new_size=(768,768)
+        else:
+            new_size = (500 if width<height else round((500*width)/height), 500 if width>height else round((500*height)/width))
+        image = image.resize(new_size, Image.Resampling.LANCZOS)
+        return image
+
     new_size = (768 if what == "banner" else 500, 500)
     if what == "banner":
         if round((768 * height) / width) < 500:
@@ -145,6 +174,48 @@ def img_process(image, what="ava"):
     image = image.crop((left, top, right, bottom))
     return image
 
+def verify_image(file):
+    try:
+        with Image.open(file) as image:
+            image.verify()
+            return image.format.lower() in ALLOWED_EXTENSIONS
+    except:
+        return False
+
+def img_THREAD(id,passedfirst,file_path,filename,redirect):
+    time.sleep(1) #Wait for loading page to load (ironic)
+    if not passedfirst:
+        socketio.emit(f'done_{id}', {"error": True,"reason":"BADFILE","redirect": redirect})
+    else:
+        temp_filename=os.path.join('temp_uploads',file_path,filename)
+        what = 'ava' if filename == 'ava.jpg' else 'banner' if filename == 'banner.jpg' else 'post'
+        prediction=predict.classify(model, temp_filename)
+        if round(prediction[temp_filename]['hentai']+prediction[temp_filename]['porn']+prediction[temp_filename]['sexy'],2) < 0.5:
+            image = img_conversion(temp_filename, what)
+            image.save(os.path.join('uploads',file_path,filename))
+            socketio.emit(f'done_{id}',{"error":False,"redirect":redirect})
+        else:
+            socketio.emit(f'done_{id}', {"error": True,"reason":"NSFW","redirect":redirect})
+        shutil.rmtree(os.path.join('temp_uploads', file_path))
+    active_threads.pop(id, None)
+
+def img_PROCESS(id,file,file_path,filename,redirect):
+    if id not in active_threads:
+        if file and '.' in secure_filename(file.filename) and secure_filename(file.filename).rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS and verify_image(file.stream):
+            os.makedirs(os.path.join('temp_uploads',file_path), exist_ok=True)
+            image = Image.open(file.stream)
+            image = image.convert('RGB')
+            filename='.'.join(filename.split('.')[:-1])+'.jpg'
+            image.save(os.path.join('temp_uploads',file_path,filename),"JPEG")
+            active_threads[current_user.login.lower()] = Thread(target=img_THREAD, args=(id,True,file_path,filename,redirect))
+            active_threads[current_user.login.lower()].start()
+        else:
+            active_threads[current_user.login.lower()] = Thread(target=img_THREAD,args=(id,False,file_path,filename,redirect))
+            active_threads[current_user.login.lower()].start()
+        return True
+    else:
+        return False
+
 def rating_count(post):
     rating_post = post['rating'] if type(post) == dict else post
     new_format = rating_post
@@ -159,7 +230,6 @@ def rating_count(post):
         return post
     else:
         return new_format
-
 
 class User(UserMixin):
     def __init__(self, id_, login, email, password_hash):
@@ -224,6 +294,7 @@ def load_user(user_id):
 
 @socketio.on('change_rating_com')
 def change_rating(data):
+    sid = request.sid
     if current_user.is_authenticated and current_user.id!=1:
         commentId = data.get('commentId', 0)
         if commentId and commentId.isnumeric():
@@ -321,13 +392,14 @@ def change_rating(data):
                                     conn.commit()
                         commentrating = rating_count(temp_comment_rating)
         if commentrating is not None:
-            socketio.emit(f'scs_change_rating_com_{current_user.login}',
-                          {"commentId": commentId, "new_rating": commentrating, "what": what, "clickedElementId": clickedElementId})
+            socketio.emit(f'scs_change_rating_com',
+                          {"commentId": commentId, "new_rating": commentrating, "what": what, "clickedElementId": clickedElementId}, to=sid)
     else:
         None
 
 @socketio.on('change_rating')
 def change_rating(data):
+    sid=request.sid
     if current_user.is_authenticated and current_user.id!=1:
         postId = data.get('postId', 0)
         if postId and postId.isnumeric():
@@ -429,8 +501,8 @@ def change_rating(data):
                                     conn.commit()
                         postrating = rating_count(temp_post_rating)
         if postrating is not None:
-            socketio.emit(f'scs_change_rating_{current_user.login}',
-                          {"postId": postId, "new_rating": postrating, "what": what, "clickedElementId": clickedElementId})
+            socketio.emit(f'scs_change_rating',
+                          {"postId": postId, "new_rating": postrating, "what": what, "clickedElementId": clickedElementId}, to=sid)
     else:
         None
 
@@ -448,7 +520,7 @@ def auth():
         login = re.sub(r"\s+", '_', request.form.get('login', ''))
         email = request.form.get('email', '')
         password = request.form.get('password', '')
-        if 0<len(login)<=30 and 0<len(password)<=36 and login.lower()!='anonymous' and (len(password)>=8 and re.search(r"^[A-Za-z0-9!@#$%^&*()-_=+\[\]{}|;:'\",.<>/?~]+$",password)):
+        if 0<len(login)<=30 and len(password)>0 and login.lower()!='anonymous' and (len(password)>=8 and re.search(r"^[A-Za-z0-9!@#$%^&*()-_=+\[\]{}|;:'\",.<>/?~]+$",password)):
             if what=='signup' and 0<len(email)<=89 and re.match(r'^[a-zA-Z0-9_-]+$',login) is not None and re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email) is not None:
                 if is_safe_folder(login, 'u', 'create'):
                     user = User.create(login, email, ph.hash(password))
@@ -477,7 +549,6 @@ def auth():
                 return "Error :)\nField is incorrectly formated. (JS should have detected that)"
         else:
             return "Error :)\nField is incorrectly formated. (JS should have detected that)"
-
 
 @app.route('/g/',methods=['GET','POST'])
 def new_group():
@@ -513,13 +584,11 @@ def new_group():
                                        (current_user.id,group_id))
                     conn.commit()
                 if gava.filename != '':
-                    image = img_process(gava.stream, what="ava")
-                    filename = os.path.join(f'uploads/g', group_name.lower(), 'ava.jpg')
-                    image.save(filename)
+                    if img_PROCESS(current_user.login.lower(),gava,os.path.join('g', group_name.lower()),'ava.jpg',f'/g/{group_name}'):
+                        return render_template('wait.html',login=current_user.login)
                 if gban.filename != '':
-                    image = img_process(gban.stream, what="banner")
-                    filename = os.path.join(f'uploads/g', group_name.lower(), 'banner.jpg')
-                    image.save(filename)
+                    if img_PROCESS(current_user.login.lower(),gban,os.path.join('g', group_name.lower()),'banner.jpg',f'/g/{group_name}'):
+                        return render_template('wait.html',login=current_user.login)
                 return redirect(f'/g/{group_name}')
             else:
                 return "Error :)\nField is incorrectly formated. Unsafe group name."
@@ -657,7 +726,7 @@ def posts(post):
             if current_role=='unknown':
                 return redirect(f'/p/{post}')
             pdesc=request.form.get('comment','')
-            if pdesc and len(pdesc)<=250:
+            if pdesc and len(pdesc)<=4096:
                 date_today=datetime.today().strftime("%y.%m.%d")
                 with sqlite3.connect('database/db.db') as conn:
                     cursor = conn.cursor()
@@ -801,6 +870,26 @@ def groups(group):
                                   (rating * 1.0) / (julianday('now') -julianday('20' || REPLACE(upload_date,'.','-'))+1) AS popularity_score
                               FROM posts INNER JOIN main.groups g
                               on posts.uploader_group_id = g.id INNER JOIN main.users u on u.id = posts.uploader_user_id
+                              WHERE group_name = ? ORDER BY popularity_score DESC''', (group,))
+            how_many_are_there_posts = len(cursor.fetchall())
+            cursor.execute('''SELECT posts.id,
+                                     group_name,
+                                     u.login,
+                                     upload_date,
+                                     title, desc, attach_img, rating, (SELECT GROUP_CONCAT(login)
+                                  FROM (SELECT u2.login
+                                  FROM likes_dislikes_posts
+                                  INNER JOIN main.users u2 on likes_dislikes_posts.user_id = u2.id
+                                  WHERE post_id = posts.id AND likeorno = TRUE
+                                  ORDER BY user_id)) as likes, (SELECT GROUP_CONCAT(login)
+                                  FROM (SELECT u2.login
+                                  FROM likes_dislikes_posts
+                                  INNER JOIN main.users u2 on likes_dislikes_posts.user_id = u2.id
+                                  WHERE post_id = posts.id AND likeorno = FALSE
+                                  ORDER BY user_id)) AS dislikes,
+                                  (rating * 1.0) / (julianday('now') -julianday('20' || REPLACE(upload_date,'.','-'))+1) AS popularity_score
+                              FROM posts INNER JOIN main.groups g
+                              on posts.uploader_group_id = g.id INNER JOIN main.users u on u.id = posts.uploader_user_id
                               WHERE group_name = ? ORDER BY popularity_score DESC LIMIT 5 OFFSET ?''', (group,5*(page-1)))
             rows = cursor.fetchall()
             temp_posts = { row[0]:
@@ -830,8 +919,9 @@ def groups(group):
         row = cursor.fetchone()
         if row:
             current_role=row[0]
+    subscribers=rating_count(len(set(mods_in_groups.get(group,'').lower().split(',')) | set(users_in_groups.get(group,'').lower().split(',') if users_in_groups.get(group,'') else {})))
     if request.method == 'GET':
-        return render_template('groups.html', login=current_user.login, subs=subs, group=group, posts=posts.values(), role=current_role, usermods_users=set(users_in_groups.get(group,'').lower().split(',') if users_in_groups.get(group,'') else {}),usermods_mods=set(only_mods_in_groups.get(group,'').lower().split(',') if only_mods_in_groups.get(group,'') else {}))
+        return render_template('groups.html', login=current_user.login, subs=subs, group=group, posts=posts.values(), role=current_role, subscribers=subscribers, usermods_users=set(users_in_groups.get(group,'').split(',') if users_in_groups.get(group,'') else {}),usermods_mods=set(only_mods_in_groups.get(group,'').split(',') if only_mods_in_groups.get(group,'') else {}),page=page,total_pages=how_many_are_there_posts)
     elif request.method == 'POST':
         if current_user.is_anonymous:
             login_user(load_user(1))
@@ -885,7 +975,10 @@ def groups(group):
                                           FROM posts
                                           WHERE uploader_group_id = ?;''', (current_group_id,))
                         posts_to_remove = cursor.fetchone()
-                        posts_to_remove = posts_to_remove[0].split(',') if posts_to_remove else []
+                        if posts_to_remove[0]:
+                            posts_to_remove = posts_to_remove[0].split(',')
+                        else:
+                            posts_to_remove = []
                         for postr in posts_to_remove:
                             is_safe_folder(postr,'p','delete')
                         # Posts
@@ -922,8 +1015,7 @@ def groups(group):
             gdesc=request.form.get('desc','')
             gattach=request.files['attach']
             gattach_filename=secure_filename(gattach.filename)
-            print(gattach_filename)
-            if gtitle and 0<len(gtitle)<=50 and len(gdesc)<=250:
+            if gtitle and 0<len(gtitle)<=100 and len(gdesc)<=4096:
                 date_today=datetime.today().strftime("%y.%m.%d")
                 with sqlite3.connect('database/db.db') as conn:
                     cursor = conn.cursor()
@@ -939,7 +1031,8 @@ def groups(group):
                         return redirect(f'/g/{group}')
                 if is_safe_folder(str(post_id),'p','create'):
                     if gattach_filename:
-                        gattach.save(os.path.join('uploads/p', str(post_id) ,gattach_filename))
+                        if img_PROCESS(current_user.login.lower(), gattach, os.path.join('p', str(post_id)), gattach_filename, f'/p/{post_id}'):
+                            return render_template('wait.html', login=current_user.login)
                     return redirect(f'/p/{post_id}')
                 else:
                     return redirect(f'/g/{group}')
@@ -987,9 +1080,8 @@ def groups(group):
                 file = request.files['banner']
                 if file.filename == '':
                     return redirect(f'/g/{group}')
-                image = img_process(file.stream,what="banner")
-                filename = os.path.join('uploads/g', group.lower(), 'banner.jpg')
-                image.save(filename)
+                if img_PROCESS(current_user.login.lower(), file, os.path.join('g', group.lower()), 'banner.jpg',f'/g/{group}'):
+                    return render_template('wait.html', login=current_user.login)
                 return redirect(f'/g/{group}')
             else:
                 return redirect(f'/g/{group}')
@@ -998,15 +1090,15 @@ def groups(group):
                 file = request.files['avatar']
                 if file.filename == '':
                     return redirect(f'/g/{group}')
-                image = img_process(file.stream,what="ava")
-                filename = os.path.join('uploads/g', group.lower(), 'ava.jpg')
-                image.save(filename)
+                if img_PROCESS(current_user.login.lower(), file, os.path.join('g', group.lower()), 'ava.jpg',f'/g/{group}'):
+                    return render_template('wait.html', login=current_user.login)
                 return redirect(f'/g/{group}')
             else:
                 return redirect(f'/g/{group}')
-        elif 'usermods' in request.form:
+        elif 'usermod' in request.form:
             if current_role == 'creat':
                 new_mods=set(request.form.getlist('usermods'))
+                new_mods={mod.lower() for mod in new_mods}
                 actual_mods = list(new_mods - set(only_mods_in_groups.get(group, '').lower().split(',')))
                 turn_to_users = list(set(only_mods_in_groups.get(group, '').lower().split(',')) - new_mods)
                 with sqlite3.connect('database/db.db') as conn:
@@ -1022,7 +1114,6 @@ def groups(group):
                         [group] + turn_to_users)
                     conn.commit()
             return redirect(f'/g/{group}')
-
 
 @app.route('/u/<login>', methods=['GET','POST'])
 def profile(login):
@@ -1195,9 +1286,8 @@ def profile(login):
             file = request.files['avatar']
             if file.filename == '':
                 return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=True, page=page, total_pages=how_many_are_there_posts)
-            image = img_process(file.stream,what="ava")
-            filename = os.path.join('uploads/u', current_user.login.lower(), 'ava.jpg')
-            image.save(filename)
+            if img_PROCESS(current_user.login.lower(), file, os.path.join('u', current_user.login.lower()), 'ava.jpg',f'/u/{login}'):
+                return render_template('wait.html', login=current_user.login)
             return redirect(f'/u/{login}')
         elif 'logout' in request.form:
             logout_user()
@@ -1327,7 +1417,7 @@ def index():
         if query!='':
             sql_command+="WHERE title LIKE :search OR desc LIKE :search OR attach_img LIKE :search ORDER BY popularity_score DESC "
         elif filter == '':
-            sql_command+=f'WHERE group_name IN ({", ".join("?" for _ in subs)}) '
+            sql_command+=f'WHERE group_name IN ({", ".join("?" for _ in subs)}) ORDER BY popularity_score DESC '
         elif filter == 'popular':
             sql_command+='ORDER BY popularity_score DESC '
         elif filter == 'latest':
@@ -1411,24 +1501,36 @@ def index():
 def serve_user_file(folder0,folder1,filename):
     return send_from_directory(os.path.join(UPLOAD_FOLDER, folder0, folder1), filename)
 
-@app.errorhandler(404)
-def error(e):
+@app.route('/error')
+def error():
+    er=request.args.get('e','Error')
+    er_msg='Unexpected error!'
+    if str(er)=='404':
+        er_msg='This page does not exist!'
+    elif str(er)=='413':
+        er_msg="Image too large!\n(Max: 5MB)"
     if current_user.is_anonymous:
         login_user(load_user(1))
     subs = {}
-    with sqlite3.connect('database/db.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute('''SELECT GROUP_CONCAT(group_name)
-                          FROM (SELECT group_name
-                                FROM subscriptions
-                                         INNER JOIN groups ON subscriptions.group_id = groups.id
-                                WHERE user_id = ?
-                                ORDER BY group_id)''', (current_user.id,))
-        row = cursor.fetchone()
-        if row[0]:
-            subs = sorted({sub for sub in row[0].split(',') if is_safe_folder(sub, 'g', 'exist')})
-    return render_template('error.html', login=current_user.login, subs=subs)
+    try:
+        with sqlite3.connect('database/db.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('''SELECT GROUP_CONCAT(group_name)
+                              FROM (SELECT group_name
+                                    FROM subscriptions
+                                             INNER JOIN groups ON subscriptions.group_id = groups.id
+                                    WHERE user_id = ?
+                                    ORDER BY group_id)''', (current_user.id,))
+            row = cursor.fetchone()
+            if row[0]:
+                subs = sorted({sub for sub in row[0].split(',') if is_safe_folder(sub, 'g', 'exist')})
+    except:
+        None
+    return render_template('error.html', login=current_user.login, subs=subs, error=str(er), errormsg=er_msg)
 
+@app.errorhandler(HTTPException)
+def error_handler(e):
+    return redirect(url_for('error',e=e.code))
 
 if __name__ == '__main__':
     socketio.run(app, allow_unsafe_werkzeug=True)
