@@ -3,17 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ "Sign In" if what=='signin' else "Sign Up" }}</title>
+    <style>
+        section #auth-block {
+            position: relative;
+            background-color: #fff;
+            border-left: 5px solid #c62828;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        form #input-form {
+            background-color: #fff;
+            border-left: 5px solid #c62828;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem 3rem;
+            width: 320px;
+            text-align: center;
+            position: relative;
+        }
+
+        h2 {
+            color: #c62828;
+            margin-bottom: 1.5rem;
+        }
+
+        form label {
+            display: block;
+            font-size: 0.9rem;
+            color: #555;
+            text-align: left;
+            margin-bottom: 0.3rem;
+        }
+
+        form input {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 0.6rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        form input:focus {
+            border-color: #c62828;
+            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.2);
+            outline: none;
+        }
+
+        form button,
+        button[type="button"] {
+            background-color: #c62828;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        form button:hover,
+        button[type="button"]:hover {
+            background-color: #b71c1c;
+        }
+
+        button[type="button"] {
+            margin-top: 1rem;
+            background-color: transparent;
+            color: #c62828;
+            border: 2px solid #c62828;
+            font-weight: 600;
+        }
+
+        button[type="button"]:hover {
+            background-color: #c62828;
+            color: #fff;
+        }
+
+        @media (max-width: 480px) {
+            form#input-form {
+                width: 90%;
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <form id="input-form" method="POST" onkeydown="return event.key != 'Enter';">
-        <label>Login: <input type="text" name="login"></label><br><br>
-        {% if what=='signup' %}
-        <label>Email: <input type="email" name="email"></label><br><br>
-        {% endif %}
-        <label>Pass: <input type="password" name="password"></label><br><br>
-        <button type="submit" value="Send">Send</button>
-    </form>
-    <button type="button" value="{{ 'Sign Up' if what=='signin' else 'Sign In' }}" onclick="changeTab()">{{ 'Sign Up' if what=='signin' else 'Sign In' }}</button>
+    <section id="auth-block">
+        <form id="input-form" method="POST" onkeydown="return event.key != 'Enter';">
+            <label>Login: <input type="text" name="login"></label><br><br>
+            {% if what=='signup' %}
+            <label>Email: <input type="email" name="email"></label><br><br>
+            {% endif %}
+            <label>Pass: <input type="password" name="password"></label><br><br>
+            <button type="submit" value="Send">Send</button>
+        </form>
+        <button type="button" value="{{ 'Sign Up' if what=='signin' else 'Sign In' }}" onclick="changeTab()">{{ 'Sign Up' if what=='signin' else 'Sign In' }}</button>
+    </sectionclaass>
     <script>
         function changeTab(){
             document.location.href = "/u/?w={{ 'signup' if what=='signin' else 'signin' }}";
