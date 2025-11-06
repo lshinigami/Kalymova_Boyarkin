@@ -13,6 +13,8 @@
             padding: 2rem;
             text-align: center;
             margin-bottom: 2rem;
+            width: 420px;
+            height: 200px;
         }
 
         body {
@@ -45,12 +47,13 @@
             display: block;
             font-size: 0.9rem;
             color: #555;
-            text-align: left;
+            text-align: start;
             margin-bottom: 0.3rem;
+            width: 680px
         }
 
         form input {
-            width: 100%;
+            width: 50%;
             border: 1px solid #ccc;
             border-radius: 8px;
             padding: 0.6rem;
@@ -74,7 +77,7 @@
             padding: 0.7rem 1.5rem;
             cursor: pointer;
             transition: background 0.3s;
-            width: 100%;
+            width: 50%;
         }
 
         form button:hover,
@@ -106,11 +109,11 @@
 <body>
     <section id="auth-block">
         <form id="input-form" method="POST" onkeydown="return event.key != 'Enter';">
-            <label>Login: <input type="text" name="login"></label><br><br>
+            <label>Login: <input type="text" name="login"></label><br>
             {% if what=='signup' %}
-            <label>Email: <input type="email" name="email"></label><br><br>
+            <label>Email: <input type="email" name="email"></label><br>
             {% endif %}
-            <label>Pass: <input type="password" name="password"></label><br><br>
+            <label>Pass: <input type="password" name="password"></label><br>
             <button type="submit" value="Send">Send</button>
         </form>
         <button type="button" value="{{ 'Sign Up' if what=='signin' else 'Sign In' }}" onclick="changeTab()">{{ 'Sign Up' if what=='signin' else 'Sign In' }}</button>
