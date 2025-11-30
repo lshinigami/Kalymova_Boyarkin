@@ -12,26 +12,45 @@
     <link href="/static/css.css" rel="stylesheet">
     <script src="/static/socket.io.min.js"></script>
     <script src="/static/bootstrap.bundle.min.js"></script>
-    <!-- Detect if PrivacyBadger or AdBlocker disabled JavaScript -->
-    <noscript>
-        <style type="text/css">
-            #container {
-                display: none;
-            }
-        </style>
-        <div class="noscriptmsg">
-            You don't have javascript enabled. Good luck with that.
-        </div>
-    </noscript>
 </head>
 <body>
+<!-- Detect if PrivacyBadger/NoScript or AdBlocker disabled JavaScript -->
+<noscript>
+    <style type="text/css">
+        #container {
+            display: none;
+        }
+    </style>
+    <div class="noscriptmsg">
+        <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+                style="position: sticky; min-height: 90px;">
+            <div class="flex-grow-1 text-center">
+                <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <figure style="place-items: center;">
+                    <img src="/static/No_JavaScript.jpg" alt="X" class="text-danger m-3" style="width: 150px; height: 150px; font-size: 6rem; text-align: center; border: 0; border-radius: 0">
+                    <figcaption class="text-secondary">JavaScript is disabled!</figcaption>
+                    <figcaption style="font-size: 1rem; text-align: center;" class="text-secondary">And with almost the entire functionality of the website.<br>
+                    Please enable at least JavaScript in your AdBlocker or privacy extensions before accessing this page.<br>
+                    If you have any concern regarding the safety of your privacy, then you can check our GitHub page, where you will be able to see what methods and functions are used here.<br>
+                        <a href="https://github.com/lshinigami/Kalymova_Boyarkin" target="_blank">https://github.com/lshinigami/Kalymova_Boyarkin</a></figcaption>
+                </figure>
+            </article>
+        </main>
+    </div>
+</noscript>
 <div id="container">
 
     <!-- Header -->
-    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light" style="position: sticky; min-height: 90px;">
-      <div class="flex-grow-1 text-center d-none d-md-block">
-          <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
-      </div>
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+            style="position: sticky; min-height: 90px;">
+        <div class="flex-grow-1 text-center d-none d-md-block">
+            <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
+        </div>
     </header>
 
     <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel"
@@ -56,8 +75,8 @@
         <article>
             <figure>
                 <div class="d-flex justify-content-center">
-                <div class="spinner-border" style="width: 5rem; height: 5rem; margin: 2rem;" role="status">
-                </div>
+                    <div class="spinner-border" style="width: 5rem; height: 5rem; margin: 2rem;" role="status">
+                    </div>
                 </div>
                 <figcaption class="text-secondary text-break">Processing request...</figcaption>
                 <figcaption style="display: flex;" class="text-secondary text-break">Please wait! You will be automatically redirected.</figcaption>
@@ -73,20 +92,20 @@
     const socket = io();
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     socket.on('done_{{ login.lower() }}', data => {
-        if (data["error"]===true){
-            if (data["reason"]==="NSFW") {
+        if (data["error"] === true) {
+            if (data["reason"] === "NSFW") {
                 document.getElementById('errorModalBodyContent').innerText = 'NSFW content is not allowed!';
-            }else if (data["reason"]==="BADFILE") {
+            } else if (data["reason"] === "BADFILE") {
                 document.getElementById('errorModalBodyContent').innerText = 'The image is corrupted!';
             }
             errorModal.show();
             document.getElementById('errorModal').addEventListener('hidden.bs.modal', event => {
-              window.location.href = data["redirect"];
+                window.location.href = data["redirect"];
             });
-        }else{
+        } else {
             window.location.href = data["redirect"];
         }
     });
-    </script>
+</script>
 </body>
 </html>

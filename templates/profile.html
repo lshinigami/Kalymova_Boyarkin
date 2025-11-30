@@ -21,17 +21,19 @@
             text-align: center;
             margin-bottom: 2rem;
         }
+
         .logout-btn {
             position: absolute;
             top: 1rem;
             right: 1rem;
             width: auto !important;
         }
+
         .image-wrapper {
-			position: relative;
-			display: inline-block;
-			cursor: pointer;
-		}
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
 
         figure img {
             width: 120px;
@@ -42,28 +44,29 @@
 
         .image-wrapper img {
             object-fit: cover;
-			transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease;
         }
+
         .overlay {
-			position: absolute;
-			inset: 0;
-			border-radius: 50%;
-			background: rgba(0, 0, 0, 0.4);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			opacity: 0;
-			transition: opacity 0.3s ease;
-		}
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
         .overlay i {
-			color: white;
-			font-size: 2rem;
-		}
+            color: white;
+            font-size: 2rem;
+        }
 
-		.image-wrapper:hover .overlay {
-			opacity: 1;
-		}
+        .image-wrapper:hover .overlay {
+            opacity: 1;
+        }
 
         figcaption {
             margin-top: 1rem;
@@ -77,36 +80,18 @@
             color: #555;
         }
 
-        form input {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 0.6rem;
-        }
-
-        form input:focus {
-            border-color: #c62828;
-            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.25);
-        }
-
-        form button {
-            background-color: #c62828;
-            color: white;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            padding: 0.6rem;
-            transition: background 0.3s;
+        #toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            z-index: 2;
+            color: var(--bs-secondary-color);
         }
 
         form button:hover {
             background-color: #b71c1c;
-        }
-
-        @media (max-width: 768px) {
-            section.profile-info {
-                border-width: 2px;
-                padding: 1rem 0;
-            }
         }
     </style>
     <script src="/static/socket.io.min.js"></script>
@@ -124,7 +109,36 @@
     </noscript>
 </head>
 <body>
-    <div id="container">
+<!-- Detect if PrivacyBadger/NoScript or AdBlocker disabled JavaScript -->
+<noscript>
+    <style type="text/css">
+        #container {
+            display: none;
+        }
+    </style>
+        <div class="noscriptmsg">
+        <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+                style="position: sticky; min-height: 90px;">
+            <div class="flex-grow-1 text-center">
+                <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <figure style="place-items: center;">
+                    <img src="/static/No_JavaScript.jpg" alt="X" class="text-danger m-3" style="width: 150px; height: 150px; font-size: 6rem; text-align: center; border: 0; border-radius: 0">
+                    <figcaption class="text-secondary">JavaScript is disabled!</figcaption>
+                    <figcaption style="font-size: 1rem; text-align: center;" class="text-secondary">And with almost the entire functionality of the website.<br>
+                    Please enable at least JavaScript in your AdBlocker or privacy extensions before accessing this page.<br>
+                    If you have any concern regarding the safety of your privacy, then you can check our GitHub page, where you will be able to see what methods and functions are used here.<br>
+                        <a href="https://github.com/lshinigami/Kalymova_Boyarkin" target="_blank">https://github.com/lshinigami/Kalymova_Boyarkin</a></figcaption>
+                </figure>
+            </article>
+        </main>
+    </div>
+</noscript>
+<div id="container">
     <!-- Sidebar toggle menu -->
     <button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
 
@@ -132,7 +146,7 @@
     <aside id="sidebar">
         <div class="text-center mb-4">
             <a href="/u/{{ clogin }}"><img src="/uploads/u/{{ clogin.lower() }}/ava.jpg" alt="User Avatar"
-                 onerror="this.src='/static/placeholder_ava.jpg';" class="mb-2"></a>
+                                           onerror="this.src='/static/placeholder_ava.jpg';" class="mb-2"></a>
             <a href="/u/{{ clogin }}"><p class="fw-bold mt-2">u/{{ clogin }}</p></a>
         </div>
 
@@ -151,14 +165,15 @@
                 <!-- This is a list of groups that the user is currently subscribed to.
                 It will change dynamically through the Backend -->
                 {% for sub in subs %}
-                <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
-                    <li>
-                        <section>
-                            <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon" onerror="this.src='/static/group_ava_placeholder.jpg';">
-                            <span>{{ sub }}</span>
-                        </section>
-                    </li>
-                </a>
+                    <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
+                        <li>
+                            <section>
+                                <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon"
+                                     onerror="this.src='/static/group_ava_placeholder.jpg';">
+                                <span>{{ sub }}</span>
+                            </section>
+                        </li>
+                    </a>
                 {% endfor %}
                 <a href="/g/" class="d-flex align-items-center gap-2">
                     <li>
@@ -173,160 +188,347 @@
     </aside>
 
     <!-- Header -->
-    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light" style="position: sticky; min-height: 90px;">
-      <div class="flex-grow-1 text-center d-none d-md-block">
-          <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO"></a>
-      </div>
-      <div class="search-bar" style="position:absolute; right: 1rem;">
-        <form class="d-flex align-items-center gap-2" action="/" method="get">
-          <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
-          <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
-        </form>
-      </div>
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+            style="position: sticky; min-height: 90px;">
+        <div class="flex-grow-1 text-center d-none d-md-block">
+            <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px"
+                                            alt="LOGO"></a>
+        </div>
+        <div class="search-bar" style="position:absolute; right: 1rem;">
+            <form class="d-flex align-items-center gap-2" action="/" method="get">
+                <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
+                <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
+            </form>
+        </div>
     </header>
 
-        <div id="copyToast">
+    <div id="copyToast">
         Failed to copy text
     </div>
 
-        <div class="modal fade" id="deletionModal" tabindex="-1" role="dialog" aria-labelledby="deletionModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
-          </div>
-          <div class="modal-body text-break" id="deletionModalBodyContent">
-              Do you want to remove this post?
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();">No</button>
-            <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
-          </div>
+    <div class="modal fade" id="deletionModal" tabindex="-1" role="dialog" aria-labelledby="deletionModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
+                </div>
+                <div class="modal-body text-break" id="deletionModalBodyContent">
+                    Do you want to remove this post?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();">
+                        No
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <main>
         <section class="profile-info">
             <figure>
                 {% if clogin.lower()==login.lower() %}
-                <form id="avatarForm" method="POST" enctype="multipart/form-data">
-                    <input type="file" id="fileInput" name="avatar" style="display: none;" onchange="submitForm()" accept="image/*">
-                    <div class="image-wrapper" onclick="document.getElementById('fileInput').click();">
-                        <img id="avatarImage"
-                         src="/uploads/u/{{ login.lower() }}/ava.jpg"
-                         alt="User avatar"
-                         onerror="this.src='/static/placeholder_ava.jpg';">
-                        <div class="overlay">
-                            <i class="bi bi-plus-lg"></i>
+                    <form id="avatarForm" method="POST" enctype="multipart/form-data">
+                        <input type="file" id="fileInput" name="avatar" style="display: none;" onchange="submitForm()"
+                               accept="image/*">
+                        <div class="image-wrapper" onclick="document.getElementById('fileInput').click();">
+                            <img id="avatarImage"
+                                 src="/uploads/u/{{ login.lower() }}/ava.jpg"
+                                 alt="User avatar"
+                                 onerror="this.src='/static/placeholder_ava.jpg';">
+                            <div class="overlay">
+                                <i class="bi bi-plus-lg"></i>
+                            </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
                 {% else %}
-                <img src="/uploads/u/{{ login.lower() }}/ava.jpg" alt="User avatar" onerror="this.src='/static/placeholder_ava.jpg';">
+                    <img src="/uploads/u/{{ login.lower() }}/ava.jpg" alt="User avatar"
+                         onerror="this.src='/static/placeholder_ava.jpg';">
                 {% endif %}
                 <figcaption class="fw-bold">u/{{ login }}</figcaption>
             </figure>
 
             <!-- Profile edit form -->
             {% if clogin.lower()==login.lower() %}
-            <form method="POST" class="logout-btn">
-                <button type="submit" name="logout" class="btn w-100"><i class="bi bi-box-arrow-right"></i></button>
-            </form>
-            <form method="POST" class="mt-4 mx-auto" style="max-width:400px;">
-                <div class="mb-3 text-start">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" {% if error==True %} style="border: 2px red solid;" {% endif %} id="email" name="email" value="{{ cemail }}" class="form-control" maxlength="89" required>
-                </div>
+                <form method="POST" class="logout-btn">
+                    <button type="submit" name="logout" class="btn w-100"><i class="bi bi-box-arrow-right"></i></button>
+                </form>
+                <form method="POST" class="mt-4 mx-auto" style="max-width:400px;" id="profileForm">
+                    <div class="mb-3 text-start">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" value="{{ cemail }}" name="email" class="form-control"
+                               maxlength="89" placeholder="Enter new email..." required>
+                        <div id="emailHelpBlock" class="form-text">
 
-                <div class="mb-3 text-start">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" {% if error==True %} style="border: 2px red solid;" {% endif %} id="password" name="password" class="form-control" placeholder="Enter new password">
-                </div>
+                        </div>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="position-relative">
+                            <input type="password" id="password" name="password" class="form-control" maxlength="150"
+                                   placeholder="Enter new password..." aria-describedby="passwordHelpBlock">
+                            <button type="button" class="bg-transparent border-0" id="toggle-password">
+                                <i class="bi bi-eye-slash" id="toggle-icon"></i>
+                            </button>
+                        </div>
+                        <div id="passwordHelpBlock" class="form-text">
 
-                <button type="submit" class="btn btn-outline-danger">Save</button>
-            </form>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-danger btn-lg" onclick="sendForm()">Save</button>
+                </form>
             {% endif %}
         </section>
 
         <!-- Profile Posts -->
         {% for post in posts %}
-        <article>
-            <!-- Group of origin (avatar, name), upload date -->
-            <header>
-                <a href="/g/{{ post['g'] }}"><img src="/uploads/g/{{ post['g'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/group_ava_placeholder.jpg';"></a>
-                <h2 style="white-space: nowrap; overflow-x: clip; max-width: 50%;"><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none">g/{{ post['g'] }}</a></h2>
-                <span class="text-secondary">•</span>
-                <span class="text-secondary">{{ post['upload_date'] }}</span>
-            </header>
+            <article>
+                <!-- Group of origin (avatar, name), upload date -->
+                <header>
+                    <a href="/g/{{ post['g'] }}"><img src="/uploads/g/{{ post['g'].lower() }}/ava.jpg" alt="Avatar"
+                                                      onerror="this.src='/static/group_ava_placeholder.jpg';"></a>
+                    <h2 style="white-space: nowrap; overflow-x: clip; max-width: 50%;"><a href="/g/{{ post['g'] }}"
+                                                                                          class="text-danger text-decoration-none">g/{{ post['g'] }}</a>
+                    </h2>
+                    <span class="text-secondary">•</span>
+                    <span class="text-secondary">{{ post['upload_date'] }}</span>
+                </header>
 
-            <!-- Post title, post content -->
-            <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
-                <p class="postTitle">{{ post['title'] }}</p>
-                <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}" class="text-decoration-none text-break content-img" style="white-space: pre-line; object-fit: cover; max-width: 896px; max-height: 896px;">
-            </a>
+                <!-- Post title, post content -->
+                <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
+                    <p class="postTitle">{{ post['title'] }}</p>
+                    <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}"
+                         class="text-decoration-none text-break content-img"
+                         style="white-space: pre-line; object-fit: cover; max-width: 896px; max-height: 896px;">
+                </a>
 
-            <!-- Post rating, additional button (share a link) -->
-            <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
-                <div class="post-rating">
-                    <span id="like-button" class="{{ 'enabled-span' if clogin.lower() not in post['liked_by'] and clogin.lower() not in post['disliked_by'] else 'disabled-span-clicked' if clogin.lower() in post['liked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)" ><i class="bi bi-arrow-up"></i></span>
-                    <span id="post-rating-number"  class="mx-2">{{ post['rating'] }}</span>
-                    <span id="dislike-button" class="{{ 'enabled-span' if clogin.lower() not in post['liked_by'] and clogin.lower() not in post['disliked_by'] else 'disabled-span-clicked' if clogin.lower() in post['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
+                <!-- Post rating, additional button (share a link) -->
+                <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
+                    <div class="post-rating">
+                        <span id="like-button" class="
+
+
+                                {{ 'enabled-span' if clogin.lower() not in post['liked_by'] and clogin.lower() not in post['disliked_by'] else 'disabled-span-clicked' if clogin.lower() in post['liked_by'] else 'disabled-span' }}"
+                              onclick="send_change_rating(event)"><i class="bi bi-arrow-up"></i></span>
+                        <span id="post-rating-number" class="mx-2">{{ post['rating'] }}</span>
+                        <span id="dislike-button" class="
+
+
+                                {{ 'enabled-span' if clogin.lower() not in post['liked_by'] and clogin.lower() not in post['disliked_by'] else 'disabled-span-clicked' if clogin.lower() in post['disliked_by'] else 'disabled-span' }}"
+                              onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
+                    </div>
+                    <div class="post-additional">
+                        {% if clogin.lower() in post['who_rem'] %}
+                            <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
+                                <input type="hidden" name="postId" value="{{ post['id'] }}">
+                            </form>
+                            <span class="delete-post" style="cursor:pointer;"
+                                  onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();})({{ post['id'] }})"
+                                  title="Delete the post"><i class="bi bi-trash"></i></span>
+                        {% endif %}
+                        <span class="share-button ms-1" onclick="copyLink(event)" title="Copy the post link"><i
+                                class="bi bi-copy"></i></span>
+                    </div>
                 </div>
-                <div class="post-additional">
-                    {% if clogin.lower() in post['who_rem'] %}
-                    <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
-                        <input type="hidden" name="postId" value="{{ post['id'] }}">
-                    </form>
-                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
-                    {% endif %}
-                    <span class="share-button ms-1" onclick="copyLink(event)" title="Copy the post link"><i class="bi bi-copy"></i></span>
-                </div>
-            </div>
-        </article>
+            </article>
         {% endfor %}
         {% if (not (page<=1 and 5*page>=total_pages)) %}
-        <nav id="pageNavigator">
-            <form method="get">
-                {% if page>1 %}
-                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}"><i class="bi bi-arrow-left"></i></button>
-                {% else %}
-                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}" disabled><i class="bi bi-arrow-left"></i></button>
-                {% endif %}
-                {% if 5*page<total_pages %}
-                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"><i class="bi bi-arrow-right"></i></button>
-                {% else %}
-                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}" disabled><i class="bi bi-arrow-right"></i></button>
-                {% endif %}
-            </form>
-        </nav>
+            <nav id="pageNavigator">
+                <form method="get">
+                    {% if page>1 %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p"
+                                value="{{ page-1 if page>1 else 1 }}"><i class="bi bi-arrow-left"></i></button>
+                    {% else %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p"
+                                value="{{ page-1 if page>1 else 1 }}" disabled><i class="bi bi-arrow-left"></i></button>
+                    {% endif %}
+                    {% if 5*page<total_pages %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"><i
+                                class="bi bi-arrow-right"></i></button>
+                    {% else %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"
+                                disabled><i class="bi bi-arrow-right"></i></button>
+                    {% endif %}
+                </form>
+            </nav>
         {% endif %}
         {% if posts|length <= 0 %}
-        <article>
-            <figure>
-                <p class="text-danger">:)</p>
-                <figcaption class="text-secondary">No posts found</figcaption>
-                <figcaption style="display: flex;" class="text-secondary">Go&nbsp;<a href="/?filter=popular" class="text-danger text-decoration-none">home </a>?</figcaption>
-            </figure>
-        </article>
+            <article>
+                <figure>
+                    <p class="text-danger">:)</p>
+                    <figcaption class="text-secondary">No posts found</figcaption>
+                    <figcaption style="display: flex;" class="text-secondary">Go&nbsp;<a href="/?filter=popular"
+                                                                                         class="text-danger text-decoration-none">home </a>?
+                    </figcaption>
+                </figure>
+            </article>
         {% endif %}
     </main>
 
     <footer>
         <p>&copy; 2025 IITU Life</p>
     </footer>
-        </div>
-    <script src="/static/js.js"></script>
-    <script>
-        {% if clogin.lower()==login.lower() %}
+</div>
+<script src="/static/js.js"></script>
+<script>
+    {% if clogin.lower()==login.lower() %}
+        const passwordInput = document.getElementById('password');
+        const emailInput = document.getElementById('email');
+        const togglePasswordButton = document.getElementById('toggle-password');
+        document.addEventListener('DOMContentLoaded', function () {
+            const passwordHelpBlock = document.getElementById('passwordHelpBlock');
+            const emailHelpBlock = document.getElementById('emailHelpBlock');
+            const toggleIcon = document.getElementById('toggle-icon');
+            {% if error=="both" %}
+                passwordInput.classList.add('is-invalid');
+                emailInput.classList.add('is-invalid');
+                togglePasswordButton.classList.add('me-3');
+            {% elif error=="email" %}
+                emailInput.classList.add('is-invalid');
+                emailHelpBlock.textContent = 'Invalid email';
+                emailHelpBlock.classList.remove('text-danger');
+                emailHelpBlock.classList.add('text-success');
+            {% elif error=="pass" %}
+                passwordInput.classList.add('is-invalid');
+                passwordHelpBlock.textContent = 'Invalid password';
+                passwordHelpBlock.classList.remove('text-danger');
+                passwordHelpBlock.classList.add('text-success');
+                togglePasswordButton.classList.add('me-3');
+            {% endif %}
+            togglePasswordButton.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                if (type === 'text') {
+                    toggleIcon.classList.remove('bi-eye-slash');
+                    toggleIcon.classList.add('bi-eye');
+                } else {
+                    toggleIcon.classList.remove('bi-eye');
+                    toggleIcon.classList.add('bi-eye-slash');
+                }
+            });
+            emailInput.addEventListener('input', function () {
+                const email = emailInput.value;
+                let isValid = true;
+                let feedbackMessage = ''
+                const check = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+                if (!check) {
+                    isValid = false;
+                }
+                if (isValid) {
+                    emailInput.classList.remove('is-invalid');
+                    emailHelpBlock.textContent = '';
+                    emailHelpBlock.classList.remove('text-danger');
+                    emailHelpBlock.classList.add('text-success');
+                } else {
+                    emailInput.classList.add('is-invalid');
+                    emailHelpBlock.innerHTML = feedbackMessage.trim();
+                    emailHelpBlock.classList.remove('text-success');
+                    emailHelpBlock.classList.add('text-danger');
+                }
+
+                if (email === '') {
+                    emailInput.classList.add('is-invalid');
+                    emailHelpBlock.textContent = '';
+                    emailHelpBlock.classList.remove('text-success', 'text-danger');
+                }
+            })
+            passwordInput.addEventListener('input', function () {
+                const password = passwordInput.value;
+                let isValid = true;
+                let feedbackMessage = '';
+
+                const minLength = 8;
+                const hasNumber = /\d/.test(password);
+                const haslowercaseLetter = /[a-z]/.test(password);
+                const hasuppercaseLetter = /[A-Z]/.test(password);
+                const hasSpecial = /[@$!%*?&_-]/.test(password);
+                const hasInvalid = /[^a-zA-Z0-9@$!%*?&_\S-]/.test(password);
+
+                if (password.length < minLength) {
+                    isValid = false;
+                    feedbackMessage += `<i class="bi bi-x-circle-fill"></i> >${minLength} Characters<br>`;
+                }
+                if (!hasNumber) {
+                    isValid = false;
+                    feedbackMessage += `<i class="bi bi-x-circle-fill"></i> Numbers<br>`;
+                }
+                if (!haslowercaseLetter) {
+                    isValid = false;
+                    feedbackMessage += `<i class="bi bi-x-circle-fill"></i> Lowercase letters<br>`;
+                }
+                if (!hasuppercaseLetter) {
+                    isValid = false;
+                    feedbackMessage += `<i class="bi bi-x-circle-fill"></i> Uppercase letters<br>`;
+                }
+                if (!hasSpecial) {
+                    isValid = false;
+                    feedbackMessage += `<i class="bi bi-x-circle-fill"></i> Special characters<br>`;
+                }
+                if (hasInvalid) {
+                    isValid = false;
+                    feedbackMessage += `<i class="bi bi-x-circle-fill"></i> No invalid characters<br>`;
+                }
+
+                if (isValid) {
+                    passwordInput.classList.remove('is-invalid');
+                    passwordInput.classList.add('is-valid');
+                    togglePasswordButton.classList.add('me-3');
+                    passwordHelpBlock.textContent = '';
+                    passwordHelpBlock.classList.remove('text-danger');
+                    passwordHelpBlock.classList.add('text-success');
+                } else {
+                    passwordInput.classList.remove('is-valid');
+                    passwordInput.classList.add('is-invalid');
+                    togglePasswordButton.classList.add('me-3');
+                    passwordHelpBlock.innerHTML = feedbackMessage.trim();
+                    passwordHelpBlock.classList.remove('text-success');
+                    passwordHelpBlock.classList.add('text-danger');
+                }
+
+                if (password === '') {
+                    passwordInput.classList.remove('is-valid');
+                    passwordInput.classList.remove('is-invalid');
+                    togglePasswordButton.classList.remove('me-3');
+                    passwordHelpBlock.innerHTML = '';
+                    passwordHelpBlock.textContent = 'Your password must be more than 8 characters long, contain letters, numbers, special characters, and must not contain spaces, or emoji.';
+                    passwordHelpBlock.classList.remove('text-success', 'text-danger');
+                }
+            });
+        });
+        function sendForm() {
+            let should_we = false;
+            const pass = document.getElementById("password");
+            const email = document.getElementById("email");
+            if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value)) {
+                if (pass.value) {
+                    if (pass.value.length >= 8 && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_-])(?=\S+$).{8,}$/.test(pass.value)) {
+                        should_we = true;
+                    } else {
+                        passwordInput.classList.add('is-invalid');
+                        togglePasswordButton.classList.add('me-3');
+                    }
+                } else {
+                    should_we = true;
+                }
+            } else {
+                emailInput.classList.add('is-invalid');
+            }
+            if (should_we) {
+                document.getElementById("profileForm").submit();
+            }
+        }
         function submitForm() {
             const fileInput = document.getElementById('fileInput');
             if (fileInput.files.length > 0) {
                 document.getElementById('avatarForm').submit();
             }
         }
-        {% endif %}
-    </script>
+    {% endif %}
+</script>
 
 </body>
 </html>

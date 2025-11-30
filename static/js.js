@@ -6,7 +6,7 @@ function linkifyMentions() {
     const postTitles = document.querySelectorAll('.postTitle');
     postTitles.forEach(postTitle => {
         postTitle.innerHTML = postTitle.textContent.replace(mentionRegex, match => {
-            return `<a class="text-decoration-none text-danger" href="${match}">${match}</a>`;
+            return `<a class="text-decoration-none text-danger" href="/${match}">${match}</a>`;
         });
     });
 }
@@ -50,23 +50,24 @@ function send_change_rating(event) {
     const parentEle = clickedElement.parentElement;
     const parentId = parentEle.parentElement.getAttribute('data-post-id');
     let what;
-    if (clickedElement.id === "like-button") {
-        if (clickedElement.className === 'enabled-span') {
+    if (clickedElement.id.trim() === "like-button") {
+        if (clickedElement.className.trim() === 'enabled-span') {
             what = 1;
-        } else if (clickedElement.className === 'disabled-span') {
+        } else if (clickedElement.className.trim() === 'disabled-span') {
             what = 2;
-        } else if (clickedElement.className === 'disabled-span-clicked') {
+        } else if (clickedElement.className.trim() === 'disabled-span-clicked') {
             what = -1;
         }
-    } else if (clickedElement.id === "dislike-button") {
-        if (clickedElement.className === 'enabled-span') {
+    } else if (clickedElement.id.trim() === "dislike-button") {
+        if (clickedElement.className.trim() === 'enabled-span') {
             what = -1;
-        } else if (clickedElement.className === 'disabled-span') {
+        } else if (clickedElement.className.trim() === 'disabled-span') {
             what = -2;
-        } else if (clickedElement.className === 'disabled-span-clicked') {
+        } else if (clickedElement.className.trim() === 'disabled-span-clicked') {
             what = 1;
         }
     }
+    console.log(what);
     socket.emit('change_rating', {postId: parentId, what: what, clickedElementId: clickedElement.id});
 }
 
