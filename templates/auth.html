@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Authorization">
+    <meta name="author" content="Kalymova Zhansaya, Boyarkin Dmitriy IT2-2312">
+    <meta name="keywords" content="Weblog, blog, IITU, IT, Authorization">
     <title>{{ "Sign In" if what=='signin' else "Sign Up" }}</title>
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/static/css.css" rel="stylesheet">
+    <script src="/static/socket.io.min.js"></script>
+    <script src="/static/bootstrap.bundle.min.js"></script>
     <style>
-        section#auth-block {
+        section.auth-block {
             position: relative;
             background-color: #fff;
             border-left: 5px solid #c62828;
@@ -13,115 +22,456 @@
             padding: 2rem;
             text-align: center;
             margin-bottom: 2rem;
-            width: 420px;
-            height: 200px;
         }
 
-        body {
-            font-family: "Poppins", sans-serif;
-            background-color: #f9f9f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        form #input-form {
-            background-color: #fff;
-            border-left: 5px solid #c62828;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 2rem 3rem;
-            width: 320px;
-            text-align: center;
+        .image-wrapper {
             position: relative;
+            display: inline-block;
+            cursor: pointer;
         }
 
-        h2 {
-            color: #c62828;
-            margin-bottom: 1.5rem;
+        figure img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #c62828;
+        }
+
+        .image-wrapper img {
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay i {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .image-wrapper:hover .overlay {
+            opacity: 1;
         }
 
         form label {
-            display: block;
+            text-align: left;
             font-size: 0.9rem;
             color: #555;
-            text-align: start;
-            margin-bottom: 0.3rem;
-            width: 680px
         }
 
-        form input {
-            width: 50%;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 0.6rem;
-            margin-bottom: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        form input:focus {
-            border-color: #c62828;
-            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.2);
-            outline: none;
-        }
-
-        form button,
-        button[type="button"] {
-            background-color: #c62828;
-            color: #fff;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            padding: 0.7rem 1.5rem;
+        #toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
-            transition: background 0.3s;
-            width: 50%;
-        }
-
-        form button:hover,
-        button[type="button"]:hover {
-            background-color: #b71c1c;
-        }
-
-        button[type="button"] {
-            margin-top: 1rem;
-            background-color: transparent;
-            color: #c62828;
-            border: 2px solid #c62828;
-            font-weight: 600;
-        }
-
-        button[type="button"]:hover {
-            background-color: #c62828;
-            color: #fff;
-        }
-
-        @media (max-width: 480px) {
-            form#input-form {
-                width: 90%;
-                padding: 1.5rem;
-            }
+            z-index: 2;
+            color: var(--bs-secondary-color);
         }
     </style>
 </head>
 <body>
-    <section id="auth-block">
-        <form id="input-form" method="POST" onkeydown="return event.key != 'Enter';">
-            <label>Login: <input type="text" name="login"></label><br>
-            {% if what=='signup' %}
-            <label>Email: <input type="email" name="email"></label><br>
-            {% endif %}
-            <label>Pass: <input type="password" name="password"></label><br>
-            <button type="submit" value="Send">Send</button>
-        </form>
-        <button type="button" value="{{ 'Sign Up' if what=='signin' else 'Sign In' }}" onclick="changeTab()">{{ 'Sign Up' if what=='signin' else 'Sign In' }}</button>
-    </sectionclaass>
-    <script>
-        function changeTab(){
-            document.location.href = "/u/?w={{ 'signup' if what=='signin' else 'signin' }}";
+<!-- Detect if PrivacyBadger/NoScript or AdBlocker disabled JavaScript -->
+<noscript>
+    <style type="text/css">
+        #container {
+            display: none;
         }
-    </script>
+    </style>
+    <div class="noscriptmsg">
+        <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+                style="position: sticky; min-height: 90px;">
+            <div class="flex-grow-1 text-center">
+                <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <figure style="place-items: center;">
+                    <img src="/static/No_JavaScript.jpg" alt="X" class="text-danger m-3" style="width: 150px; height: 150px; font-size: 6rem; text-align: center; border: 0; border-radius: 0">
+                    <figcaption class="text-secondary">JavaScript is disabled!</figcaption>
+                    <figcaption style="font-size: 1rem; text-align: center;" class="text-secondary">And with almost the entire functionality of the website.<br>
+                    Please enable at least JavaScript in your AdBlocker or privacy extensions before accessing this page.<br>
+                    If you have any concern regarding the safety of your privacy, then you can check our GitHub page, where you will be able to see what methods and functions are used here.<br>
+                        <a href="https://github.com/lshinigami/Kalymova_Boyarkin" target="_blank">https://github.com/lshinigami/Kalymova_Boyarkin</a></figcaption>
+                </figure>
+            </article>
+        </main>
+    </div>
+</noscript>
+<div id="container">
+    <!-- Sidebar toggle menu -->
+    <button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="text-center mb-4">
+            <a href="/u/{{ login }}"><img src="/uploads/u/{{ login.lower() }}/ava.jpg" alt="User Avatar"
+                                          onerror="this.src='/static/placeholder_ava.jpg';"></a>
+            <a href="/u/{{ login }}"><p class="fw-bold mt-2">u/{{ login }}</p></a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/"
+                       class="deactivated-nav-txt">Home</a>
+                </li>
+                <li><a href="/?filter=popular"
+                       class="deactivated-nav-txt">Popular</a></li>
+                <li><a href="/?filter=latest"
+                       class="deactivated-nav-txt">Latest</a>
+                </li>
+
+                <li class="mt-3 text-uppercase text-white-50 small">Subscriptions ▼</li>
+                <!-- This is a list of groups that the user is currently subscribed to.
+                It will change dynamically through the Backend -->
+                {% for sub in subs %}
+                    <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
+                        <li>
+                            <section>
+                                <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon"
+                                     onerror="this.src='/static/group_ava_placeholder.jpg';">
+                                <span>{{ sub }}</span>
+                            </section>
+                        </li>
+                    </a>
+                {% endfor %}
+                <a href="/g/" class="d-flex align-items-center gap-2">
+                    <li>
+                        <section>
+                            <img src="/static/new_group_ava.jpg">
+                            <span>Create new Group</span>
+                        </section>
+                    </li>
+                </a>
+            </ul>
+        </nav>
+    </aside>
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+            style="position: sticky; min-height: 90px;">
+        <div class="flex-grow-1 text-center">
+            <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px"
+                                            alt="LOGO"></a>
+        </div>
+    </header>
+    <main>
+        <section class="auth-block">
+            <h2 class="mb-4">{{ "Sign In" if what=='signin' else "Sign Up" }}</h2>
+            <form method="POST" class="mt-4 mx-auto" style="max-width:400px;" id="authForm"
+                  enctype="multipart/form-data" onkeydown="return event.key != 'Enter';">
+                {% if what=='signup' %}
+                    <figure>
+                        <input type="file" id="fileInput" name="avatar" style="display: none;" onchange="changeImg()"
+                               accept="image/*">
+                        <div class="image-wrapper" onclick="document.getElementById('fileInput').click();">
+                            <img id="avatarImage"
+                                 src="/static/placeholder_ava.jpg"
+                                 alt="User avatar">
+                            <div class="overlay">
+                                <i class="bi bi-plus-lg"></i>
+                            </div>
+                        </div>
+                    </figure>
+                {% endif %}
+                <div class="mb-3 text-start">
+                    {% if what=='signup' %}
+                        <label for="login" class="form-label">Login</label>
+                    {% else %}
+                        <label for="login" class="form-label">Login/Email</label>
+                    {% endif %}
+                    <input type="text" id="login" name="login" class="form-control" maxlength="30"
+                           placeholder="Enter username..." required>
+                    <div id="loginHelpBlock" class="form-text">
+
+                    </div>
+                </div>
+                {% if what=='signup' %}
+                    <div class="mb-3 text-start">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" maxlength="89"
+                               placeholder="Enter email..." required>
+                        <div id="emailHelpBlock" class="form-text">
+
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="mb-3 text-start">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="position-relative">
+                        <input type="password" id="password" name="password" class="form-control" maxlength="150"
+                               placeholder="Enter password..." aria-describedby="passwordHelpBlock" required>
+                        <button type="button" class="bg-transparent border-0" id="toggle-password">
+                            <i class="bi bi-eye-slash" id="toggle-icon"></i>
+                        </button>
+                    </div>
+                    <div id="passwordHelpBlock" class="form-text">
+
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger btn-lg text-white mb-3"
+                        value="{{ "Sign In" if what=='signin' else "Sign Up" }}" onclick="sendForm(event)"><i
+                        class="bi bi-box-arrow-in-right"></i> {{ "Sign In" if what=='signin' else "Sign Up" }}</button>
+            </form>
+            <a class="text-secondary text-decoration-none cursor-pointer"
+               href="/u/?w={{ 'signup' if what=='signin' else 'signin' }}">{{ "I don't have an account" if what=='signin' else 'I already have an account' }}</a>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 IITU Life</p>
+    </footer>
+</div>
+<script>
+    const passwordInput = document.getElementById('password');
+    const loginInput = document.getElementById('login');
+    const togglePasswordButton = document.getElementById('toggle-password');
+    {% if what=='signup' %}
+        const emailInput = document.getElementById('email');
+    {% endif %}
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordHelpBlock = document.getElementById('passwordHelpBlock');
+        const loginHelpBlock = document.getElementById('loginHelpBlock');
+        const toggleIcon = document.getElementById('toggle-icon');
+        {% if what=='signup' %}
+            const emailHelpBlock = document.getElementById('emailHelpBlock');
+        {% endif %}
+        {% if error=="both" %}
+            loginInput.classList.add('is-invalid');
+            passwordInput.classList.add('is-invalid');
+            togglePasswordButton.classList.add('me-3');
+        {% elif error=="email" %}
+            emailInput.classList.add('is-invalid');
+            loginInput.classList.add('is-invalid');
+        {% elif error=="pass" %}
+            passwordInput.classList.add('is-invalid');
+            passwordHelpBlock.textContent = 'Incorrect password';
+            passwordHelpBlock.classList.remove('text-success');
+            passwordHelpBlock.classList.add('text-danger');
+            togglePasswordButton.classList.add('me-3');
+        {% elif error=="login" %}
+            loginInput.classList.add('is-invalid');
+            loginHelpBlock.textContent = 'Invalid login';
+            loginHelpBlock.classList.remove('text-success');
+            loginHelpBlock.classList.add('text-danger');
+        {% elif error=="already" %}
+            loginInput.classList.add('is-invalid');
+            loginHelpBlock.textContent = 'That user already exist';
+            loginHelpBlock.classList.remove('text-success');
+            loginHelpBlock.classList.add('text-danger');
+        {% elif error=="who" %}
+            loginInput.classList.add('is-invalid');
+            loginHelpBlock.textContent = 'That user does not exist';
+            loginHelpBlock.classList.remove('text-success');
+            loginHelpBlock.classList.add('text-danger');
+        {% endif %}
+        togglePasswordButton.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            if (type === 'text') {
+                toggleIcon.classList.remove('bi-eye-slash');
+                toggleIcon.classList.add('bi-eye');
+            } else {
+                toggleIcon.classList.remove('bi-eye');
+                toggleIcon.classList.add('bi-eye-slash');
+            }
+        });
+        {% if what=='signup' %}
+            emailInput.addEventListener('input', function () {
+                const email = emailInput.value;
+                let isValid = true;
+                let feedbackMessage = ''
+                const check = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+                if (!check) {
+                    isValid = false;
+                }
+                if (isValid) {
+                    emailInput.classList.remove('is-invalid');
+                    emailHelpBlock.textContent = '';
+                    emailHelpBlock.classList.remove('text-danger');
+                    emailHelpBlock.classList.add('text-success');
+                } else {
+                    emailInput.classList.add('is-invalid');
+                    emailHelpBlock.innerHTML = feedbackMessage.trim();
+                    emailHelpBlock.classList.remove('text-success');
+                    emailHelpBlock.classList.add('text-danger');
+                }
+
+                if (email === '') {
+                    emailInput.classList.add('is-invalid');
+                    emailHelpBlock.textContent = '';
+                    emailHelpBlock.classList.remove('text-success', 'text-danger');
+                }
+            })
+        {% endif %}
+        loginInput.addEventListener('input', function () {
+            const login = loginInput.value;
+            let isValid = true;
+            let feedbackMessage = '';
+            const check = /^[a-zA-Z0-9_-]+$/.test(login);
+            if (!check) {
+                {% if what=='signup' %}
+                    isValid = false;
+                {% else %}
+                    if (!(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(login))) {
+                        isValid = false;
+                    }
+                {% endif %}
+            }
+            if (isValid) {
+                loginInput.classList.remove('is-invalid');
+                loginHelpBlock.textContent = '';
+                loginHelpBlock.classList.remove('text-danger');
+                loginHelpBlock.classList.add('text-success');
+            } else {
+                loginInput.classList.add('is-invalid');
+                loginHelpBlock.innerHTML = feedbackMessage.trim();
+                loginHelpBlock.classList.remove('text-success');
+                loginHelpBlock.classList.add('text-danger');
+            }
+
+            if (login === '') {
+                loginInput.classList.add('is-invalid');
+                loginHelpBlock.textContent = 'Login must only contain letters, digits, dash or underscore.';
+                loginHelpBlock.classList.remove('text-success', 'text-danger');
+            }
+        });
+        passwordInput.addEventListener('input', function () {
+            const password = passwordInput.value;
+            let isValid = true;
+            let feedbackMessage = '';
+
+            const minLength = 8;
+            const hasNumber = /\d/.test(password);
+            const haslowercaseLetter = /[a-z]/.test(password);
+            const hasuppercaseLetter = /[A-Z]/.test(password);
+            const hasSpecial = /[@$!%*?&_-]/.test(password);
+            const hasInvalid = /[^a-zA-Z0-9@$!%*?&_\S-]/.test(password);
+
+            if (password.length < minLength) {
+                isValid = false;
+                feedbackMessage += `<i class="bi bi-x-circle-fill"></i> >${minLength} Characters<br>`;
+            }
+            if (!hasNumber) {
+                isValid = false;
+                feedbackMessage += `<i class="bi bi-x-circle-fill"></i> Numbers<br>`;
+            }
+            if (!haslowercaseLetter) {
+                isValid = false;
+                feedbackMessage += `<i class="bi bi-x-circle-fill"></i> Lowercase letters<br>`;
+            }
+            if (!hasuppercaseLetter) {
+                isValid = false;
+                feedbackMessage += `<i class="bi bi-x-circle-fill"></i> Uppercase letters<br>`;
+            }
+            if (!hasSpecial) {
+                isValid = false;
+                feedbackMessage += `<i class="bi bi-x-circle-fill"></i> Special characters<br>`;
+            }
+            if (hasInvalid) {
+                isValid = false;
+                feedbackMessage += `<i class="bi bi-x-circle-fill"></i> No invalid characters<br>`;
+            }
+
+            if (isValid) {
+                passwordInput.classList.remove('is-invalid');
+                passwordInput.classList.add('is-valid');
+                togglePasswordButton.classList.add('me-3');
+                passwordHelpBlock.textContent = '';
+                passwordHelpBlock.classList.remove('text-danger');
+                passwordHelpBlock.classList.add('text-success');
+            } else {
+                passwordInput.classList.remove('is-valid');
+                passwordInput.classList.add('is-invalid');
+                togglePasswordButton.classList.add('me-3');
+                passwordHelpBlock.innerHTML = feedbackMessage.trim();
+                passwordHelpBlock.classList.remove('text-success');
+                passwordHelpBlock.classList.add('text-danger');
+            }
+
+            if (password === '') {
+                passwordInput.classList.remove('is-valid');
+                passwordInput.classList.add('is-invalid');
+                togglePasswordButton.classList.add('me-3');
+                passwordHelpBlock.innerHTML = '';
+                passwordHelpBlock.textContent = 'Your password must be more than 8 characters long, contain letters, numbers, special characters, and must not contain spaces, or emoji.';
+                passwordHelpBlock.classList.remove('text-success', 'text-danger');
+            }
+        });
+    });
+
+    function changeTab() {
+        document.location.href = "/u/?w={{ 'signup' if what=='signin' else 'signin' }}";
+    }
+
+    function toggleMenu() {
+        document.getElementById("sidebar").classList.toggle("active");
+    }
+
+    function changeImg() {
+        const file = document.getElementById('fileInput').files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('avatarImage').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function sendForm(event) {
+        let should_we = false;
+        const login = document.getElementById("login");
+        const pass = document.getElementById("password");
+        if (login.value && pass.value) {
+            if (login.value.toLowerCase() !== 'anonymous') {
+                if (pass.value.length >= 8 && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_-])(?=\S+$).{8,}$/.test(pass.value)) {
+                    if (event.target.value === "Sign In") {
+                        if (/^[a-zA-Z0-9_-]+$/.test(login.value) || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(login.value)) {
+                            should_we = true;
+                        } else {
+                            loginInput.classList.add('is-invalid');
+                        }
+                    } else if (event.target.value === "Sign Up") {
+                        const email = document.getElementById("email");
+                        if (/^[a-zA-Z0-9_-]+$/.test(login.value) && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value)) {
+                            should_we = true;
+                        } else {
+                            loginInput.classList.add('is-invalid');
+                            emailInput.classList.add('is-invalid');
+                        }
+                    }
+                } else {
+                    passwordInput.classList.add('is-invalid');
+                    togglePasswordButton.classList.add('me-3');
+                }
+            } else {
+                loginInput.classList.add('is-invalid');
+            }
+        } else {
+            loginInput.classList.add('is-invalid');
+            passwordInput.classList.add('is-invalid');
+            togglePasswordButton.classList.add('me-3');
+            if (event.target.value === "Sign Up") {
+                const email = document.getElementById("email");
+                if (!email.value) {
+                    emailInput.classList.add('is-invalid');
+                }
+            }
+        }
+        if (should_we) {
+            document.getElementById("authForm").submit();
+        }
+    }
+</script>
 </body>
 </html>

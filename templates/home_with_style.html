@@ -13,17 +13,18 @@
     <link href="/static/css.css" rel="stylesheet">
     <style>
         .search-figure {
-          display: flex;
-          gap: 0.75rem;
-          align-items: center;
-          background-color: #fff;
-          border: 1px solid #eee;
-          border-left: 5px solid #c62828;
-          border-radius: 10px;
-          margin-bottom: 1rem;
-          padding: 1rem 1.25rem;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-left: 5px solid #c62828;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
+
         .search-figure img {
             width: 80px;
             border-radius: 50%;
@@ -31,27 +32,45 @@
     </style>
     <script src="/static/socket.io.min.js"></script>
     <script src="/static/bootstrap.bundle.min.js"></script>
-    <!-- Detect if PrivacyBadger/NoScript or AdBlocker disabled JavaScript -->
-    <noscript>
-        <style type="text/css">
-            #container {
-                display: none;
-            }
-        </style>
-        <div class="noscriptmsg">
-            You don't have javascript enabled. Good luck with that.
-        </div>
-    </noscript>
 </head>
 <body>
+<!-- Detect if PrivacyBadger/NoScript or AdBlocker disabled JavaScript -->
+<noscript>
+    <style type="text/css">
+        #container {
+            display: none;
+        }
+    </style>
+    <div class="noscriptmsg">
+        <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+                style="position: sticky; min-height: 90px;">
+            <div class="flex-grow-1 text-center">
+                <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <figure style="place-items: center;">
+                    <img src="/static/No_JavaScript.jpg" alt="X" class="text-danger m-3" style="width: 150px; height: 150px; font-size: 6rem; text-align: center; border: 0; border-radius: 0">
+                    <figcaption class="text-secondary">JavaScript is disabled!</figcaption>
+                    <figcaption style="font-size: 1rem; text-align: center;" class="text-secondary">And with almost the entire functionality of the website.<br>
+                    Please enable at least JavaScript in your AdBlocker or privacy extensions before accessing this page.<br>
+                    If you have any concern regarding the safety of your privacy, then you can check our GitHub page, where you will be able to see what methods and functions are used here.<br>
+                        <a href="https://github.com/lshinigami/Kalymova_Boyarkin" target="_blank">https://github.com/lshinigami/Kalymova_Boyarkin</a></figcaption>
+                </figure>
+            </article>
+        </main>
+    </div>
+</noscript>
 <div id="container">
-<button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
 
     <!-- Sidebar -->
     <aside id="sidebar">
         <div class="text-center mb-4">
             <a href="/u/{{ login }}"><img src="/uploads/u/{{ login.lower() }}/ava.jpg" alt="User Avatar"
-                 onerror="this.src='/static/placeholder_ava.jpg';" class="mb-2"></a>
+                                          onerror="this.src='/static/placeholder_ava.jpg';" class="mb-2"></a>
             <a href="/u/{{ login }}"><p class="fw-bold mt-2">u/{{ login }}</p></a>
         </div>
 
@@ -61,7 +80,8 @@
                        class="{{ 'activated-nav-txt' if filter!='popular' and filter!='latest' else 'deactivated-nav-txt' }}">Home</a>
                 </li>
                 <li><a href="/?filter=popular"
-                       class="{{ 'activated-nav-txt' if filter=='popular' else 'deactivated-nav-txt' }}">Popular</a></li>
+                       class="{{ 'activated-nav-txt' if filter=='popular' else 'deactivated-nav-txt' }}">Popular</a>
+                </li>
                 <li><a href="/?filter=latest"
                        class="{{ 'activated-nav-txt' if filter=='latest' else 'deactivated-nav-txt' }}">Latest</a>
                 </li>
@@ -70,14 +90,15 @@
                 <!-- This is a list of groups that the user is currently subscribed to.
                 It will change dynamically through the Backend -->
                 {% for sub in subs %}
-                <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
-                    <li>
-                        <section>
-                            <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon" onerror="this.src='/static/group_ava_placeholder.jpg';">
-                            <span>{{ sub }}</span>
-                        </section>
-                    </li>
-                </a>
+                    <a href="/g/{{ sub }}" class="d-flex align-items-center gap-2">
+                        <li>
+                            <section>
+                                <img src="/uploads/g/{{ sub.lower() }}/ava.jpg" alt="Group Icon"
+                                     onerror="this.src='/static/group_ava_placeholder.jpg';">
+                                <span>{{ sub }}</span>
+                            </section>
+                        </li>
+                    </a>
                 {% endfor %}
                 <a href="/g/" class="d-flex align-items-center gap-2">
                     <li>
@@ -92,163 +113,188 @@
     </aside>
 
     <!-- Header -->
-    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light" style="position: sticky; min-height: 90px;">
-      <div class="flex-grow-1 text-center d-none d-md-block">
-        <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO"></a>
-      </div>
-      <div class="search-bar" style="position:absolute; right: 1rem;">
-        <form class="d-flex align-items-center gap-2" action="/" method="get">
-          <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
-          <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
-        </form>
-      </div>
+    <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+            style="position: sticky; min-height: 90px;">
+        <div class="flex-grow-1 text-center d-none d-md-block">
+            <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px"
+                                            alt="LOGO"></a>
+        </div>
+        <div class="search-bar" style="position:absolute; right: 1rem;">
+            <form class="d-flex align-items-center gap-2" action="/" method="get">
+                <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
+                <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
+            </form>
+        </div>
     </header>
 
     <div id="copyToast">
         Failed to copy text
     </div>
 
-    <div class="modal fade" id="deletionModal" tabindex="-1" role="dialog" aria-labelledby="deletionModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
-          </div>
-          <div class="modal-body text-break" id="deletionModalBodyContent">
-              Do you want to remove this post?
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();">No</button>
-            <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
-          </div>
+    <div class="modal fade" id="deletionModal" tabindex="-1" role="dialog" aria-labelledby="deletionModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deletionModalLabel">Are you sure?</h5>
+                </div>
+                <div class="modal-body text-break" id="deletionModalBodyContent">
+                    Do you want to remove this post?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            onclick="whatpost=-1;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove this post?`;deletionModal.hide();">
+                        No
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="submitDeletePost()">Yes</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <!-- Posts (will load from the Backend DB) -->
     <main>
         {% if search_users|length>0 %}
-        {% for user in search_users %}
-            <div class="search-figure">
-                <a href="/u/{{ user[0] }}"><img src="/uploads/u/{{ user[0].lower() }}/ava.jpg" onerror="this.src='/static/placeholder_ava.jpg';" alt="Avatar"></a>
-                <h2 style="white-space: nowrap; overflow-x: clip; max-width: 70%;"><a href="/u/{{ user[0] }}" class="text-danger text-decoration-none">u/{{ user[0] }}</a></h2>
-            </div>
-        {% endfor %}
-        {% if not category %}
-            <form method="get" id="showmoreUsers">
-                {% if filter %}
-                <input type="hidden" name="filter" value="{{ filter }}">
-                {% endif %}
-                {% if query %}
-                <input type="hidden" name="q" value="{{ query }}">
-                {% endif %}
-                <input type="hidden" name="c" value="users">
-                <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;" onclick="document.getElementById('showmoreUsers').submit()">Show more users...</p>
-            </form>
-        {% endif %}
+            {% for user in search_users %}
+                <div class="search-figure">
+                    <a href="/u/{{ user[0] }}"><img src="/uploads/u/{{ user[0].lower() }}/ava.jpg"
+                                                    onerror="this.src='/static/placeholder_ava.jpg';" alt="Avatar"></a>
+                    <h2 style="white-space: nowrap; overflow-x: clip; max-width: 70%;"><a href="/u/{{ user[0] }}"
+                                                                                          class="text-danger text-decoration-none">u/{{ user[0] }}</a>
+                    </h2>
+                </div>
+            {% endfor %}
+            {% if not category %}
+                <form method="get" id="showmoreUsers">
+                    {% if filter %}
+                        <input type="hidden" name="filter" value="{{ filter }}">
+                    {% endif %}
+                    {% if query %}
+                        <input type="hidden" name="q" value="{{ query }}">
+                    {% endif %}
+                    <input type="hidden" name="c" value="users">
+                    <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;"
+                       onclick="document.getElementById('showmoreUsers').submit()">Show more users...</p>
+                </form>
+            {% endif %}
         {% endif %}
         {% if search_groups|length>0 %}
-        {% for group in search_groups %}
-            <div class="search-figure">
-                <a href="/g/{{ group[0] }}"><img src="/uploads/g/{{ group[0].lower() }}/ava.jpg" onerror="this.src='/static/group_ava_placeholder.jpg';" alt="Group avatar"></a>
-                <h2 style="white-space: nowrap; overflow-x: clip; max-width: 70%;"><a href="/g/{{ group[0] }}" class="text-danger text-decoration-none">g/{{ group[0] }}</a></h2>
-            </div>
-        {% endfor %}
-        {% if not category %}
-            <form method="get" id="showmoreGroups">
-                {% if filter %}
-                <input type="hidden" name="filter" value="{{ filter }}">
-                {% endif %}
-                {% if query %}
-                <input type="hidden" name="q" value="{{ query }}">
-                {% endif %}
-                <input type="hidden" name="c" value="groups">
-                <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;" onclick="document.getElementById('showmoreGroups').submit()">Show more groups...</p>
-            </form>
-        {% endif %}
+            {% for group in search_groups %}
+                <div class="search-figure">
+                    <a href="/g/{{ group[0] }}"><img src="/uploads/g/{{ group[0].lower() }}/ava.jpg" onerror="this.src='/static/group_ava_placeholder.jpg';" alt="Group avatar"></a>
+                    <h2 style="white-space: nowrap; overflow-x: clip; max-width: 70%;"><a href="/g/{{ group[0] }}" class="text-danger text-decoration-none">g/{{ group[0] }}</a>
+                    </h2>
+                </div>
+            {% endfor %}
+            {% if not category %}
+                <form method="get" id="showmoreGroups">
+                    {% if filter %}
+                        <input type="hidden" name="filter" value="{{ filter }}">
+                    {% endif %}
+                    {% if query %}
+                        <input type="hidden" name="q" value="{{ query }}">
+                    {% endif %}
+                    <input type="hidden" name="c" value="groups">
+                    <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;"
+                       onclick="document.getElementById('showmoreGroups').submit()">Show more groups...</p>
+                </form>
+            {% endif %}
         {% endif %}
         {% if posts|length>0 %}
-        {% for post in posts %}
-        <article>
-            <!-- Group of origin (avatar, name), upload date -->
-            <header>
-                <a href="/g/{{ post['g'] }}"><img src="/uploads/g/{{ post['g'].lower() }}/ava.jpg" alt="Avatar" onerror="this.src='/static/group_ava_placeholder.jpg';"></a>
-                <h2 style="white-space: nowrap; overflow-x: clip; max-width: 50%;"><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none">g/{{ post['g'] }}</a></h2>
-                <span class="text-secondary">•</span>
-                <span class="text-secondary">{{ post['upload_date'] }}</span>
-            </header>
+            {% for post in posts %}
+                <article>
+                    <!-- Group of origin (avatar, name), upload date -->
+                    <header>
+                        <a href="/g/{{ post['g'] }}"><img src="/uploads/g/{{ post['g'].lower() }}/ava.jpg" alt="Avatar"
+                                                          onerror="this.src='/static/group_ava_placeholder.jpg';"></a>
+                        <h2 style="white-space: nowrap; overflow-x: clip; max-width: 50%;"><a href="/g/{{ post['g'] }}" class="text-danger text-decoration-none">g/{{ post['g'] }}</a>
+                        </h2>
+                        <span class="text-secondary">•</span>
+                        <span class="text-secondary">{{ post['upload_date'] }}</span>
+                    </header>
 
-            <!-- Post title, post content -->
-            <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
-                <p class="postTitle">{{ post['title'] }}</p>
-                <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}" class="content-img" style="white-space: pre-line; object-fit: cover; max-width: 896px; max-height: 896px;">
-            </a>
+                    <!-- Post title, post content -->
+                    <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
+                        <p class="postTitle">{{ post['title'] }}</p>
+                        <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}" class="content-img" style="white-space: pre-line; object-fit: cover; max-width: 896px; max-height: 896px;">
+                    </a>
 
-            <!-- Post rating, additional button (share a link) -->
-            <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
-                <div class="post-rating">
-                    <span id="like-button"  class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['liked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)" ><i class="bi bi-arrow-up"></i></span>
-                    <span id="post-rating-number" class="mx-2">{{ post['rating'] }}</span>
-                    <span id="dislike-button"  class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
-                </div>
-                <div class="post-additional">
-                    {% if login.lower() in post['who_rem'] %}
-                    <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
-                        <input type="hidden" name="postId" value="{{ post['id'] }}">
-                    </form>
-                    <span class="delete-post" style="cursor:pointer;" onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();})({{ post['id'] }})" title="Delete the post"><i class="bi bi-trash"></i></span>
+                    <!-- Post rating, additional button (share a link) -->
+                    <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
+                        <div class="post-rating">
+                            <span id="like-button" class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['liked_by'] else 'disabled-span' }}"
+                                  onclick="send_change_rating(event)"><i class="bi bi-arrow-up"></i></span>
+                            <span id="post-rating-number" class="mx-2">{{ post['rating'] }}</span>
+                            <span id="dislike-button" class="{{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['disliked_by'] else 'disabled-span' }}" onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
+                        </div>
+                        <div class="post-additional">
+                            {% if login.lower() in post['who_rem'] %}
+                                <form method="POST" id="removePost_{{ post['id'] }}" style="display: none;">
+                                    <input type="hidden" name="postId" value="{{ post['id'] }}">
+                                </form>
+                                <span class="delete-post" style="cursor:pointer;"
+                                      onclick="((post_id) => {whatpost=post_id;document.getElementById('deletionModalBodyContent').textContent=`Do you want to remove /p/${post_id}?`;deletionModal.show();})({{ post['id'] }})"
+                                      title="Delete the post"><i class="bi bi-trash"></i></span>
+                            {% endif %}
+                            <span class="share-button ms-1" onclick="copyLink(event)" title="Copy the post link"><i
+                                    class="bi bi-copy"></i></span>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+            {% if query and not category %}
+                <form method="get" id="showmorePosts">
+                    {% if filter %}
+                        <input type="hidden" name="filter" value="{{ filter }}">
                     {% endif %}
-                    <span class="share-button ms-1" onclick="copyLink(event)" title="Copy the post link"><i class="bi bi-copy"></i></span>
-                </div>
-            </div>
-        </article>
-        {% endfor %}
-        {% if query and not category %}
-            <form method="get" id="showmorePosts">
-                {% if filter %}
-                <input type="hidden" name="filter" value="{{ filter }}">
-                {% endif %}
-                {% if query %}
-                <input type="hidden" name="q" value="{{ query }}">
-                {% endif %}
-                <input type="hidden" name="c" value="posts">
-                <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;" onclick="document.getElementById('showmorePosts').submit()">Show more posts...</p>
-            </form>
-        {% endif %}
+                    {% if query %}
+                        <input type="hidden" name="q" value="{{ query }}">
+                    {% endif %}
+                    <input type="hidden" name="c" value="posts">
+                    <p style="color: #aaa; text-align: center; cursor: pointer; font-size: 1rem;"
+                       onclick="document.getElementById('showmorePosts').submit()">Show more posts...</p>
+                </form>
+            {% endif %}
         {% endif %}
         {% if (not (page<=1 and 5*page>=total_pages)) and (not query or (query and category)) %}
-        <nav id="pageNavigator">
-            <form method="get">
-                {% if filter %}
-                <input type="hidden" name="filter" value="{{ filter }}">
-                {% endif %}
-                {% if query %}
-                <input type="hidden" name="q" value="{{ query }}">
-                {% endif %}
-                {% if category %}
-                <input type="hidden" name="c" value="{{ category }}">
-                {% endif %}
-                {% if page>1 %}
-                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}"><i class="bi bi-arrow-left"></i></button>
-                {% else %}
-                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page-1 if page>1 else 1 }}" disabled><i class="bi bi-arrow-left"></i></button>
-                {% endif %}
-                {% if 5*page<total_pages %}
-                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"><i class="bi bi-arrow-right"></i></button>
-                {% else %}
-                <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}" disabled><i class="bi bi-arrow-right"></i></button>
-                {% endif %}
-            </form>
-        </nav>
+            <nav id="pageNavigator">
+                <form method="get">
+                    {% if filter %}
+                        <input type="hidden" name="filter" value="{{ filter }}">
+                    {% endif %}
+                    {% if query %}
+                        <input type="hidden" name="q" value="{{ query }}">
+                    {% endif %}
+                    {% if category %}
+                        <input type="hidden" name="c" value="{{ category }}">
+                    {% endif %}
+                    {% if page>1 %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p"
+                                value="{{ page-1 if page>1 else 1 }}"><i class="bi bi-arrow-left"></i></button>
+                    {% else %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p"
+                                value="{{ page-1 if page>1 else 1 }}" disabled><i class="bi bi-arrow-left"></i></button>
+                    {% endif %}
+                    {% if 5*page<total_pages %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"><i
+                                class="bi bi-arrow-right"></i></button>
+                    {% else %}
+                        <button type="submit" class="btn btn-danger btn-lg text-white" name="p" value="{{ page+1 }}"
+                                disabled><i class="bi bi-arrow-right"></i></button>
+                    {% endif %}
+                </form>
+            </nav>
         {% endif %}
         {% if posts|length <= 0 and search_users|length<=0 and search_groups|length<=0 %}
-        <article>
-            <figure>
-                <p class="text-danger">:^)</p>
-                <figcaption class="text-secondary">No posts found</figcaption>
-                <figcaption style="display: flex;" class="text-secondary">Find&nbsp;<a href="/?filter=popular" class="text-danger text-decoration-none">some </a>?</figcaption>
-            </figure>
-        </article>
+            <article>
+                <figure>
+                    <p class="text-danger">:^)</p>
+                    <figcaption class="text-secondary">No posts found</figcaption>
+                    <figcaption style="display: flex;" class="text-secondary">Find&nbsp;<a href="/?filter=popular"
+                                                                                           class="text-danger text-decoration-none">some </a>?
+                    </figcaption>
+                </figure>
+            </article>
         {% endif %}
     </main>
 
@@ -256,6 +302,6 @@
         <p>&copy; 2025 IITU Life</p>
     </footer>
 </div>
-    <script src="/static/js.js"></script>
+<script src="/static/js.js"></script>
 </body>
 </html>

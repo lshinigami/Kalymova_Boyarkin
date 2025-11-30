@@ -129,26 +129,22 @@
             transition: all 0.2s ease;
         }
 
-        /* Avatar + name container */
         .user-info {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* Avatar style */
         .user-info img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
         }
 
-        /* Checkbox hidden */
         .user-card input[type="checkbox"] {
             display: none;
         }
 
-        /* The right-side text (hidden by default) */
         .extra-text {
             display: none;
             font-weight: 600;
@@ -211,19 +207,37 @@
     </style>
     <script src="/static/socket.io.min.js"></script>
     <script src="/static/bootstrap.bundle.min.js"></script>
-    <!-- Detect if PrivacyBadger or AdBlocker disabled JavaScript -->
-    <noscript>
-        <style type="text/css">
-            #container {
-                display: none;
-            }
-        </style>
-        <div class="noscriptmsg">
-            You don't have javascript enabled. Good luck with that.
-        </div>
-    </noscript>
 </head>
 <body>
+<!-- Detect if PrivacyBadger/NoScript or AdBlocker disabled JavaScript -->
+<noscript>
+    <style type="text/css">
+        #container {
+            display: none;
+        }
+    </style>
+        <div class="noscriptmsg">
+        <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
+                style="position: sticky; min-height: 90px;">
+            <div class="flex-grow-1 text-center">
+                <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <figure style="place-items: center;">
+                    <img src="/static/No_JavaScript.jpg" alt="X" class="text-danger m-3" style="width: 150px; height: 150px; font-size: 6rem; text-align: center; border: 0; border-radius: 0">
+                    <figcaption class="text-secondary">JavaScript is disabled!</figcaption>
+                    <figcaption style="font-size: 1rem; text-align: center;" class="text-secondary">And with almost the entire functionality of the website.<br>
+                    Please enable at least JavaScript in your AdBlocker or privacy extensions before accessing this page.<br>
+                    If you have any concern regarding the safety of your privacy, then you can check our GitHub page, where you will be able to see what methods and functions are used here.<br>
+                        <a href="https://github.com/lshinigami/Kalymova_Boyarkin" target="_blank">https://github.com/lshinigami/Kalymova_Boyarkin</a></figcaption>
+                </figure>
+            </article>
+        </main>
+    </div>
+</noscript>
 <div id="container">
     <!-- Sidebar toggle menu -->
     <button class="menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
@@ -379,7 +393,7 @@
                                 <input id="usermodSubmit" name="usermod" type="submit" style="display:none">
                             </form>
                         {% else %}
-                            <span style="white-space: nowrap; overflow-x: clip; max-width: 90%;">You are the only user :(</span>
+                            <span style="white-space: nowrap; overflow-x: clip; max-width: 90%;">You are the only user in this group :(</span>
                         {% endif %}
                     </div>
                 </div>
@@ -532,17 +546,24 @@
                 <a href="/p/{{ post['id'] }}" class="text-decoration-none text-dark text-break">
                     <p class="postTitle">{{ post['title'] }}</p>
                     <img src="/uploads/p/{{ post['id'] }}/{{ post['attach_img'] }}" alt="{{ post['desc'] }}"
-                         class="text-decoration-none text-break content-img" style="white-space: pre-line; object-fit: cover; max-width: 896px; max-height: 896px;">
+                         class="text-decoration-none text-break content-img"
+                         style="white-space: pre-line; object-fit: cover; max-width: 896px; max-height: 896px;">
                 </a>
 
                 <!-- Post rating, additional button (share a link) -->
                 <div class="post-footer mt-3" data-post-id="{{ post['id'] }}">
                     <div class="post-rating">
                         <span id="like-button" class="
+
+
+
                                 {{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['liked_by'] else 'disabled-span' }}"
                               onclick="send_change_rating(event)"><i class="bi bi-arrow-up"></i></span>
                         <span id="post-rating-number" class="mx-2">{{ post['rating'] }}</span>
                         <span id="dislike-button" class="
+
+
+
                                 {{ 'enabled-span' if login.lower() not in post['liked_by'] and login.lower() not in post['disliked_by'] else 'disabled-span-clicked' if login.lower() in post['disliked_by'] else 'disabled-span' }}"
                               onclick="send_change_rating(event)"><i class="bi bi-arrow-down"></i></span>
                     </div>

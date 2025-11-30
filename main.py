@@ -12,7 +12,7 @@ from threading import Thread
 from PIL import Image
 from argon2 import PasswordHasher
 from argon2.exceptions import *
-from flask import Flask, render_template, request, redirect, send_from_directory, url_for
+from flask import Flask, render_template, request, redirect, send_from_directory, url_for, session
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user
 from flask_socketio import SocketIO
 from werkzeug.exceptions import HTTPException
@@ -60,7 +60,7 @@ with sqlite3.connect('database/db.db') as conn:
                    ''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS groups(
                        id INTEGER PRIMARY KEY,
-                       group_name VARCHAR(50) UNIQUE COLLATE NOCASE NOT NULL)
+                       group_name VARCHAR(20) UNIQUE COLLATE NOCASE NOT NULL)
                     ''')
     cursor.execute('''
                    CREATE TABLE IF NOT EXISTS subscriptions(
@@ -409,6 +409,7 @@ def change_rating(data):
         what = data.get('what', 0)
         clickedElementId = data.get('clickedElementId', None)
         postrating = None
+        print(postId,what,clickedElementId)
         if postId and what and clickedElementId:
             with sqlite3.connect('database/db.db') as conn:
                 cursor = conn.cursor()
@@ -512,43 +513,76 @@ def empty_post():
 
 @app.route('/u/',methods=['GET','POST'])
 def auth():
+    if current_user.is_anonymous:
+        login_user(load_user(1))
     what = request.args.get('w', 'signin').lower()
     what = 'signin' if what not in ['signin','signup'] else what
     if request.method == 'GET':
-        return render_template('auth.html', what=what)
+        subs = {}
+        try:
+            with sqlite3.connect('database/db.db') as conn:
+                cursor = conn.cursor()
+                cursor.execute('''SELECT GROUP_CONCAT(group_name)
+                                  FROM (SELECT group_name
+                                        FROM subscriptions
+                                                 INNER JOIN groups ON subscriptions.group_id = groups.id
+                                        WHERE user_id = ?
+                                        ORDER BY group_id)''', (current_user.id,))
+                row = cursor.fetchone()
+                if row[0]:
+                    subs = sorted({sub for sub in row[0].split(',') if is_safe_folder(sub, 'g', 'exist')})
+        except:
+            None
+        error_msg = session.pop('error_msg', '')
+        return render_template('auth.html', what=what, error=error_msg, login=current_user.login, subs=subs)
     elif request.method == 'POST':
+        print(request.form)
         login = re.sub(r"\s+", '_', request.form.get('login', ''))
         email = request.form.get('email', '')
         password = request.form.get('password', '')
-        if 0<len(login)<=30 and len(password)>0 and login.lower()!='anonymous' and (len(password)>=8 and re.search(r"^[A-Za-z0-9!@#$%^&*()-_=+\[\]{}|;:'\",.<>/?~]+$",password)):
+        if 0<len(login)<=30 and len(password)>0 and login.lower()!='anonymous' and (len(password)>=8 and re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_-])(?=\S+$).{8,}$",password) is not None):
             if what=='signup' and 0<len(email)<=89 and re.match(r'^[a-zA-Z0-9_-]+$',login) is not None and re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email) is not None:
+                print(request.files)
+                if 'avatar' in request.files:
+                    ava = request.files['avatar']
                 if is_safe_folder(login, 'u', 'create'):
                     user = User.create(login, email, ph.hash(password))
                     if user:
                         login_user(user)
+                        if 'avatar' in request.files and ava.filename != '':
+                            if img_PROCESS(user.login.lower(), ava, os.path.join('u', user.login.lower()),'ava.jpg', f'/u/{user.login}'):
+                                session['wait'] = True
+                                return redirect('/loading')
                         return redirect(f'/u/{user.login}')
                     else:
-                        return "Error :)\nThis user is already registered."
-                return "Error :)\nField is incorrectly formated. Unsafe username."
+                        session['error_msg']='already'
+                        return redirect(url_for('auth',w=what))
+                session['error_msg'] = 'login'
+                return redirect(url_for('auth',w=what))
             elif what=='signin':
                 if re.match(r'^[a-zA-Z0-9_-]+$', login) is not None:
                     user = User.find_by_login(login)
                 elif re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', login) is not None:
                     user = User.find_by_email(login)
                 else:
-                    return "Error :)\nField is incorrectly formated. (JS should have detected that)"
+                    session['error_msg']='login'
+                    return redirect(url_for('auth',w=what))
                 if user:
                     if user.check_password(password):
                         login_user(user)
                         return redirect(f'/u/{user.login}')
                     else:
-                        return "Error :)\nPassword is incorrect"
+                        session['error_msg']='pass'
+                        return redirect(url_for('auth',w=what))
                 else:
-                    return "Error :)\nUser not found"
+                    session['error_msg'] = 'who'
+                    return redirect(url_for('auth',w=what))
             else:
-                return "Error :)\nField is incorrectly formated. (JS should have detected that)"
+                session['error_msg']='email'
+                return redirect(url_for('auth',w=what))
         else:
-            return "Error :)\nField is incorrectly formated. (JS should have detected that)"
+            session['error_msg'] = 'both'
+            return redirect(url_for('auth',w=what))
 
 @app.route('/g/',methods=['GET','POST'])
 def new_group():
@@ -558,12 +592,27 @@ def new_group():
     if current_user.id==1:
         return redirect('/u/')
     if request.method == 'GET':
-        return render_template('new_group.html')
+        subs = {}
+        try:
+            with sqlite3.connect('database/db.db') as conn:
+                cursor = conn.cursor()
+                cursor.execute('''SELECT GROUP_CONCAT(group_name)
+                                  FROM (SELECT group_name
+                                        FROM subscriptions
+                                                 INNER JOIN groups ON subscriptions.group_id = groups.id
+                                        WHERE user_id = ?
+                                        ORDER BY group_id)''', (current_user.id,))
+                row = cursor.fetchone()
+                if row[0]:
+                    subs = sorted({sub for sub in row[0].split(',') if is_safe_folder(sub, 'g', 'exist')})
+        except:
+            None
+        error_msg = session.pop('error_msg', '')
+        return render_template('new_group.html', error=error_msg, login=current_user.login, subs=subs)
     elif request.method == 'POST':
         group_name = request.form.get('group_name','')
         gava = request.files['gava']
-        gban = request.files['gban']
-        if group_name and re.match(r'^[a-zA-Z0-9_-]+$', group_name) is not None:
+        if group_name and 0<len(group_name)<20 and re.match(r'^[a-zA-Z0-9_-]+$', group_name) is not None:
             if is_safe_folder(group_name, 'g', 'create'):
                 with sqlite3.connect('database/db.db') as conn:
                     cursor = conn.cursor()
@@ -571,7 +620,8 @@ def new_group():
                         cursor.execute("INSERT INTO groups (group_name) VALUES (?)",
                                        (group_name,))
                     except sqlite3.IntegrityError:
-                        return "Error :)\nThis user is already registered."
+                        session['error_msg'] = 'already'
+                        return redirect('/g/')
                     conn.commit()
                 with sqlite3.connect('database/db.db') as conn:
                     cursor = conn.cursor()
@@ -585,15 +635,15 @@ def new_group():
                     conn.commit()
                 if gava.filename != '':
                     if img_PROCESS(current_user.login.lower(),gava,os.path.join('g', group_name.lower()),'ava.jpg',f'/g/{group_name}'):
-                        return render_template('wait.html',login=current_user.login)
-                if gban.filename != '':
-                    if img_PROCESS(current_user.login.lower(),gban,os.path.join('g', group_name.lower()),'banner.jpg',f'/g/{group_name}'):
-                        return render_template('wait.html',login=current_user.login)
+                        session['wait'] = True
+                        return redirect('/loading')
                 return redirect(f'/g/{group_name}')
             else:
-                return "Error :)\nField is incorrectly formated. Unsafe group name."
+                session['error_msg'] = 'name'
+                return redirect('/g/')
         else:
-            return "Error :)\nField is incorrectly formated. (JS should have detected that)"
+            session['error_msg'] = 'name'
+            return redirect('/g/')
 
 @app.route('/p/<post>',methods=['GET','POST'])
 def posts(post):
@@ -659,7 +709,7 @@ def posts(post):
                                'disliked_by': set(row[9].lower().split(',') if row[9] else []),
                                'who_rem': set(who_rem_in_this_post + [row[2].lower()])})
     else:
-        return render_template('error.html', login=current_user.login, subs=subs)
+        return redirect('/error')
     #Select comments
     with sqlite3.connect('database/db.db') as conn:
         cursor = conn.cursor()
@@ -899,7 +949,7 @@ def groups(group):
 
         posts = {id: rating_count(post.copy()) for id,post in temp_posts.items()}
     else:
-        return render_template('error.html', login=current_user.login, subs=subs)
+        return redirect('/error')
     current_group_id = None
     with sqlite3.connect('database/db.db') as conn:
         cursor = conn.cursor()
@@ -910,7 +960,7 @@ def groups(group):
         if row:
             current_group_id = row[0]
     if current_group_id is None:
-        return render_template('error.html', login=current_user.login, subs=subs)
+        return redirect('/error')
     current_role='unknown'
     with sqlite3.connect('database/db.db') as conn:
         cursor = conn.cursor()
@@ -936,7 +986,7 @@ def groups(group):
                         cursor.execute("INSERT INTO subscriptions (user_id, group_id, role) VALUES (?, ?, 'user')",
                                        (current_user.id, current_group_id))
                     except sqlite3.IntegrityError:
-                        return render_template('error.html', login=current_user.login, subs=subs)
+                        return redirect('/error')
                     conn.commit()
             elif current_role=='user' or current_role=='moder':
                 with sqlite3.connect('database/db.db') as conn:
@@ -1020,10 +1070,10 @@ def groups(group):
                 with sqlite3.connect('database/db.db') as conn:
                     cursor = conn.cursor()
                     cursor.execute("INSERT INTO posts (uploader_group_id,uploader_user_id,upload_date,title,desc,attach_img,rating) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                                       (current_group_id, current_user.id, date_today, gtitle, gdesc, gattach_filename, 0))
+                                       (current_group_id, current_user.id, date_today, gtitle, gdesc, gattach_filename[::-1].split('.',1)[1][::-1]+'.jpg', 0))
                     conn.commit()
                     cursor.execute("SELECT id FROM posts WHERE uploader_group_id=? AND uploader_user_id=? AND upload_date=? AND title=? AND desc=? AND attach_img=? AND rating=? ORDER BY id DESC LIMIT 1",
-                                   (current_group_id, current_user.id, date_today, gtitle, gdesc, gattach_filename, 0))
+                                   (current_group_id, current_user.id, date_today, gtitle, gdesc, gattach_filename[::-1].split('.',1)[1][::-1]+'.jpg', 0))
                     row = cursor.fetchone()
                     if row:
                         post_id=row[0]
@@ -1032,7 +1082,8 @@ def groups(group):
                 if is_safe_folder(str(post_id),'p','create'):
                     if gattach_filename:
                         if img_PROCESS(current_user.login.lower(), gattach, os.path.join('p', str(post_id)), gattach_filename, f'/p/{post_id}'):
-                            return render_template('wait.html', login=current_user.login)
+                            session['wait'] = True
+                            return redirect('/loading')
                     return redirect(f'/p/{post_id}')
                 else:
                     return redirect(f'/g/{group}')
@@ -1081,7 +1132,8 @@ def groups(group):
                 if file.filename == '':
                     return redirect(f'/g/{group}')
                 if img_PROCESS(current_user.login.lower(), file, os.path.join('g', group.lower()), 'banner.jpg',f'/g/{group}'):
-                    return render_template('wait.html', login=current_user.login)
+                    session['wait'] = True
+                    return redirect('/loading')
                 return redirect(f'/g/{group}')
             else:
                 return redirect(f'/g/{group}')
@@ -1091,7 +1143,8 @@ def groups(group):
                 if file.filename == '':
                     return redirect(f'/g/{group}')
                 if img_PROCESS(current_user.login.lower(), file, os.path.join('g', group.lower()), 'ava.jpg',f'/g/{group}'):
-                    return render_template('wait.html', login=current_user.login)
+                    session['wait'] = True
+                    return redirect('/loading')
                 return redirect(f'/g/{group}')
             else:
                 return redirect(f'/g/{group}')
@@ -1202,9 +1255,10 @@ def profile(login):
 
         posts = {id: rating_count(post.copy()) for id,post in temp_posts.items()}
     else:
-        return render_template('error.html', login=current_user.login, subs=subs)
+        return redirect('/error')
     if request.method == 'GET':
-        return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=False, page=page, total_pages=how_many_are_there_posts)
+        error_msg = session.pop('error_msg','')
+        return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=error_msg, page=page, total_pages=how_many_are_there_posts)
     elif request.method == 'POST':
         if current_user.is_anonymous:
             login_user(load_user(1))
@@ -1215,7 +1269,7 @@ def profile(login):
             email=request.form.get('email','')
             new_pass=request.form.get('password','')
             if new_pass:
-                if email and new_pass and re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',email) is not None and (len(new_pass)>=8 and re.search(r"^[A-Za-z0-9!@#$%^&*()-_=+\[\]{}|;:'\",.<>/?~]+$",new_pass)):
+                if email and new_pass and re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',email) is not None and (len(new_pass)>=8 and re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_-])(?=\S+$).{8,}$",new_pass)):
                     if current_user.id==1:
                         return redirect('/u/')
                     if not current_user.check_password(new_pass) and current_user.email!=email:
@@ -1226,7 +1280,8 @@ def profile(login):
                                                   SET email = ?, password = ?
                                                   WHERE id = ?;''', (email, ph.hash(new_pass),current_user.id))
                             except sqlite3.IntegrityError:
-                                return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=True, page=page, total_pages=how_many_are_there_posts)
+                                session['error_msg'] = 'both'
+                                return redirect(f'/u/{login}')
                             conn.commit()
                             login_user(load_user(current_user.id))
                             return redirect(f'/u/{login}')
@@ -1238,7 +1293,9 @@ def profile(login):
                                                   SET email = ?
                                                   WHERE id = ?;''', (email,current_user.id))
                             except sqlite3.IntegrityError:
-                                return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=True, page=page, total_pages=how_many_are_there_posts)
+                                session['error_msg'] = 'email'
+                                return redirect(f'/u/{login}')
+
                             conn.commit()
                             login_user(load_user(current_user.id))
                             return redirect(f'/u/{login}')
@@ -1250,18 +1307,22 @@ def profile(login):
                                                   SET password = ?
                                                   WHERE id = ?;''', (ph.hash(new_pass),current_user.id))
                             except sqlite3.IntegrityError:
-                                return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=True, page=page, total_pages=how_many_are_there_posts)
+                                session['error_msg'] = 'pass'
+                                return redirect(f'/u/{login}')
+
                             conn.commit()
                             login_user(load_user(current_user.id))
                             return redirect(f'/u/{login}')
                     else:
-                        return render_template('profile.html', clogin=current_user.login, cemail=current_user.email,
-                                               login=login, subs=subs, posts=posts.values(), error=False, page=page, total_pages=how_many_are_there_posts)
+                        session['error_msg']=''
+                        return redirect(f'/u/{login}')
+
                 else:
-                    return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login,
-                                           subs=subs, posts=posts.values(), error=True, page=page, total_pages=how_many_are_there_posts)
+                    session['error_msg']='both'
+                    return redirect(f'/u/{login}')
+
             else:
-                if email and re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',email) is not None and (len(new_pass)>=8 and re.search(r"^[A-Za-z0-9!@#$%^&*()-_=+\[\]{}|;:'\",.<>/?~]+$",new_pass)):
+                if email and re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',email) is not None:
                     if current_user.id==1:
                         return redirect('/u/')
                     if current_user.email!=email:
@@ -1272,22 +1333,29 @@ def profile(login):
                                                   SET email = ?
                                                   WHERE id = ?;''', (email, current_user.id))
                             except sqlite3.IntegrityError:
-                                return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=True, page=page, total_pages=how_many_are_there_posts)
+                                session['error_msg'] = 'email'
+                                return redirect(f'/u/{login}')
+
                             conn.commit()
                             login_user(load_user(current_user.id))
                             return redirect(f'/u/{login}')
                     else:
-                        return render_template('profile.html', clogin=current_user.login, cemail=current_user.email,
-                                               login=login, subs=subs, posts=posts.values(), error=False, page=page, total_pages=how_many_are_there_posts)
+                        session['error_msg'] = ''
+                        return redirect(f'/u/{login}')
+
                 else:
-                    return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login,
-                                           subs=subs, posts=posts.values(), error=True, page=page, total_pages=how_many_are_there_posts)
+                    session['error_msg'] = 'email'
+                    return redirect(f'/u/{login}')
+
         elif 'avatar' in request.files:
             file = request.files['avatar']
             if file.filename == '':
-                return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=True, page=page, total_pages=how_many_are_there_posts)
+                session['error_msg'] = 'ava'
+                return redirect(f'/u/{login}')
+
             if img_PROCESS(current_user.login.lower(), file, os.path.join('u', current_user.login.lower()), 'ava.jpg',f'/u/{login}'):
-                return render_template('wait.html', login=current_user.login)
+                session['wait'] = True
+                return redirect('/loading')
             return redirect(f'/u/{login}')
         elif 'logout' in request.form:
             logout_user()
@@ -1326,7 +1394,7 @@ def profile(login):
                         conn.commit()
                     return redirect(f'/u/{login}')
                 else:
-                    return "Post can't be deleted."
+                    return redirect('/error')
             else:
                 return redirect(f'/u/{login}')
         else:
@@ -1491,7 +1559,7 @@ def index():
                         conn.commit()
                     return redirect('/?filter=popular')
                 else:
-                    return "Post can't be deleted."
+                    return redirect('/error')
             else:
                 return redirect('/?filter=popular')
         else:
@@ -1500,6 +1568,16 @@ def index():
 @app.route('/uploads/<folder0>/<folder1>/<filename>')
 def serve_user_file(folder0,folder1,filename):
     return send_from_directory(os.path.join(UPLOAD_FOLDER, folder0, folder1), filename)
+
+@app.route('/loading')
+def loading():
+    if current_user.is_anonymous:
+        login_user(load_user(1))
+        return redirect('/?filter=popular')
+    if request.method == 'GET' and session.pop('wait',False):
+        return render_template('wait.html', login=current_user.login)
+    else:
+        return redirect('/?filter=popular')
 
 @app.route('/error')
 def error():
