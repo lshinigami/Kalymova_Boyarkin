@@ -92,6 +92,7 @@
     const socket = io();
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     socket.on('done_{{ login.lower() }}', data => {
+        console.log(data);
         if (data["error"] === true) {
             if (data["reason"] === "NSFW") {
                 document.getElementById('errorModalBodyContent').innerText = 'NSFW content is not allowed!';

@@ -32,6 +32,7 @@ if not os.path.exists('model/saved_model.h5'):
     exit(-1)
 
 model = predict.load_model('model/saved_model.h5')
+
 app = Flask(__name__)
 # app.config['REMEMBER_COOKIE_DURATION']=timedelta(days=10)
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
@@ -183,7 +184,7 @@ def verify_image(file):
         return False
 
 def img_THREAD(id,passedfirst,file_path,filename,redirect):
-    time.sleep(1) #Wait for loading page to load (ironic)
+    time.sleep(3) #Wait for loading page to load (ironic)
     if not passedfirst:
         socketio.emit(f'done_{id}', {"error": True,"reason":"BADFILE","redirect": redirect})
     else:
@@ -193,6 +194,7 @@ def img_THREAD(id,passedfirst,file_path,filename,redirect):
         if round(prediction[temp_filename]['hentai']+prediction[temp_filename]['porn']+prediction[temp_filename]['sexy'],2) < 0.5:
             image = img_conversion(temp_filename, what)
             image.save(os.path.join('uploads',file_path,filename))
+            print(redirect,id)
             socketio.emit(f'done_{id}',{"error":False,"redirect":redirect})
         else:
             socketio.emit(f'done_{id}', {"error": True,"reason":"NSFW","redirect":redirect})
