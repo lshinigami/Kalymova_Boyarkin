@@ -406,7 +406,7 @@
             {% if role=='creat' or role=='moder' %}
                 <form id="bannerForm" method="POST" enctype="multipart/form-data" style="width:100%">
                     <input type="file" id="BannerfileInput" name="banner" style="display: none;"
-                           onchange="document.getElementById('bannerForm').submit();" accept="image/*">
+                           onchange="document.getElementById('bannerForm').submit();" accept=".png, .jpg, .jpeg, .gif">
                     <div class="image-wrapper" onclick="document.getElementById('BannerfileInput').click();">
                         <img id="bannerImage"
                              src="/uploads/g/{{ group.lower() }}/banner.jpg"
@@ -431,7 +431,7 @@
                     {% if role=='creat' or role=='moder' %}
                         <form id="avatarForm" method="POST" enctype="multipart/form-data">
                             <input type="file" id="AvatarfileInput" name="avatar" style="display: none;"
-                                   onchange="document.getElementById('avatarForm').submit();" accept="image/*">
+                                   onchange="document.getElementById('avatarForm').submit();" accept=".png, .jpg, .jpeg, .gif">
                             <div class="image-wrapper" onclick="document.getElementById('AvatarfileInput').click();">
                                 <img id="AvatarImage"
                                      src="/uploads/g/{{ group.lower() }}/ava.jpg"
@@ -508,7 +508,7 @@
                     <button type="button" class="btn btn-outline-danger btn-lg text-danger mt-2" id="attach-btn"
                             onclick="document.getElementById('attach').click()"><i class="bi bi-link-45deg"></i> Attach
                     </button>
-                    <input type="file" id="attach" name="attach" accept="image/*" class="form-control"
+                    <input type="file" id="attach" name="attach" accept=".png, .jpg, .jpeg, .gif" class="form-control"
                            style="display: none" onchange="(() => {
                     if (attach_file.files.length > 0) {
                         attachment_name.innerText=attach_file.files[0].name;

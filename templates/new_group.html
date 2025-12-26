@@ -150,9 +150,15 @@
     </aside>
     <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
             style="position: sticky; min-height: 90px;">
-        <div class="flex-grow-1 text-center">
+        <div class="flex-grow-1 text-center d-none d-md-block">
             <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px"
                                             alt="LOGO"></a>
+        </div>
+        <div class="search-bar" style="position:absolute; right: 1rem;">
+            <form class="d-flex align-items-center gap-2" action="/" method="get">
+                <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
+                <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
+            </form>
         </div>
     </header>
     <main>
@@ -162,7 +168,7 @@
                   enctype="multipart/form-data" onkeydown="return event.key != 'Enter';">
                 <figure>
                     <input type="file" id="AvatarfileInput" name="gava" style="display: none;"
-                           onchange="changeImg(event)" accept="image/*">
+                           onchange="changeImg(event)" accept=".png, .jpg, .jpeg, .gif">
                     <div class="image-wrapper" onclick="document.getElementById('AvatarfileInput').click();">
                         <img id="AvatarImage"
                              src='/static/group_ava_placeholder.jpg'

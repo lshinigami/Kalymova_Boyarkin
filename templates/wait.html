@@ -49,7 +49,14 @@
     <header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-danger bg-light"
             style="position: sticky; min-height: 90px;">
         <div class="flex-grow-1 text-center d-none d-md-block">
-            <img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px" alt="LOGO">
+            <a href="/?filter=popular"><img class="flex-grow-1 text-center" src="/static/logo.png" style="width: 150px"
+                                            alt="LOGO"></a>
+        </div>
+        <div class="search-bar" style="position:absolute; right: 1rem;">
+            <form class="d-flex align-items-center gap-2" action="/" method="get">
+                <input type="text" class="form-control form-control-sm border-danger" placeholder="Search..." name="q">
+                <button type="submit" class="btn btn-danger btn-sm text-white d-none d-md-block">Search</button>
+            </form>
         </div>
     </header>
 
@@ -79,7 +86,7 @@
                     </div>
                 </div>
                 <figcaption class="text-secondary text-break">Processing request...</figcaption>
-                <figcaption style="display: flex;" class="text-secondary text-break">Please wait! You will be automatically redirected.</figcaption>
+                <figcaption id="Loading-status" style="display: flex;" class="text-secondary text-break">Please wait! You will be automatically redirected.</figcaption>
             </figure>
         </article>
     </main>
@@ -91,8 +98,15 @@
 <script>
     const socket = io();
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    window.onload = () => {
+        setTimeout(function() {
+            const element = document.getElementById('Loading-status');
+            if (element && !errorModal._isShown) {
+                window.location.href='/?filter=popular'
+            }
+        }, 5000);
+    };
     socket.on('done_{{ login.lower() }}', data => {
-        console.log(data);
         if (data["error"] === true) {
             if (data["reason"] === "NSFW") {
                 document.getElementById('errorModalBodyContent').innerText = 'NSFW content is not allowed!';

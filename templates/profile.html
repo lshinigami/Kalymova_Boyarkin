@@ -233,7 +233,7 @@
                 {% if clogin.lower()==login.lower() %}
                     <form id="avatarForm" method="POST" enctype="multipart/form-data">
                         <input type="file" id="fileInput" name="avatar" style="display: none;" onchange="submitForm()"
-                               accept="image/*">
+                               accept=".png, .jpg, .jpeg, .gif">
                         <div class="image-wrapper" onclick="document.getElementById('fileInput').click();">
                             <img id="avatarImage"
                                  src="/uploads/u/{{ login.lower() }}/ava.jpg"

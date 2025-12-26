@@ -184,21 +184,25 @@ def verify_image(file):
         return False
 
 def img_THREAD(id,passedfirst,file_path,filename,redirect):
-    time.sleep(3) #Wait for loading page to load (ironic)
+    time.sleep(1) #Wait for loading page to load (ironic)
     if not passedfirst:
+        #status = {"error": True,"reason":"BADFILE","redirect": redirect}
         socketio.emit(f'done_{id}', {"error": True,"reason":"BADFILE","redirect": redirect})
     else:
         temp_filename=os.path.join('temp_uploads',file_path,filename)
         what = 'ava' if filename == 'ava.jpg' else 'banner' if filename == 'banner.jpg' else 'post'
         prediction=predict.classify(model, temp_filename)
+        print(prediction)
         if round(prediction[temp_filename]['hentai']+prediction[temp_filename]['porn']+prediction[temp_filename]['sexy'],2) < 0.5:
             image = img_conversion(temp_filename, what)
             image.save(os.path.join('uploads',file_path,filename))
-            print(redirect,id)
+            #status = {"error": False,"reason":None,"redirect":redirect}
             socketio.emit(f'done_{id}',{"error":False,"redirect":redirect})
         else:
+            #status = {"error": True,"reason":"NSFW","redirect":redirect}
             socketio.emit(f'done_{id}', {"error": True,"reason":"NSFW","redirect":redirect})
         shutil.rmtree(os.path.join('temp_uploads', file_path))
+    #active_threads[id]=status
     active_threads.pop(id, None)
 
 def img_PROCESS(id,file,file_path,filename,redirect):
@@ -411,7 +415,6 @@ def change_rating(data):
         what = data.get('what', 0)
         clickedElementId = data.get('clickedElementId', None)
         postrating = None
-        print(postId,what,clickedElementId)
         if postId and what and clickedElementId:
             with sqlite3.connect('database/db.db') as conn:
                 cursor = conn.cursor()
@@ -538,13 +541,11 @@ def auth():
         error_msg = session.pop('error_msg', '')
         return render_template('auth.html', what=what, error=error_msg, login=current_user.login, subs=subs)
     elif request.method == 'POST':
-        print(request.form)
         login = re.sub(r"\s+", '_', request.form.get('login', ''))
         email = request.form.get('email', '')
         password = request.form.get('password', '')
         if 0<len(login)<=30 and len(password)>0 and login.lower()!='anonymous' and (len(password)>=8 and re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_-])(?=\S+$).{8,}$",password) is not None):
             if what=='signup' and 0<len(email)<=89 and re.match(r'^[a-zA-Z0-9_-]+$',login) is not None and re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email) is not None:
-                print(request.files)
                 if 'avatar' in request.files:
                     ava = request.files['avatar']
                 if is_safe_folder(login, 'u', 'create'):
@@ -711,7 +712,7 @@ def posts(post):
                                'disliked_by': set(row[9].lower().split(',') if row[9] else []),
                                'who_rem': set(who_rem_in_this_post + [row[2].lower()])})
     else:
-        return redirect('/error')
+        return redirect(url_for('error', e=404))
     #Select comments
     with sqlite3.connect('database/db.db') as conn:
         cursor = conn.cursor()
@@ -951,7 +952,7 @@ def groups(group):
 
         posts = {id: rating_count(post.copy()) for id,post in temp_posts.items()}
     else:
-        return redirect('/error')
+        return redirect(url_for('error', e=404))
     current_group_id = None
     with sqlite3.connect('database/db.db') as conn:
         cursor = conn.cursor()
@@ -962,7 +963,7 @@ def groups(group):
         if row:
             current_group_id = row[0]
     if current_group_id is None:
-        return redirect('/error')
+        return redirect(url_for('error'))
     current_role='unknown'
     with sqlite3.connect('database/db.db') as conn:
         cursor = conn.cursor()
@@ -988,7 +989,7 @@ def groups(group):
                         cursor.execute("INSERT INTO subscriptions (user_id, group_id, role) VALUES (?, ?, 'user')",
                                        (current_user.id, current_group_id))
                     except sqlite3.IntegrityError:
-                        return redirect('/error')
+                        return redirect(url_for('error'))
                     conn.commit()
             elif current_role=='user' or current_role=='moder':
                 with sqlite3.connect('database/db.db') as conn:
@@ -1072,10 +1073,10 @@ def groups(group):
                 with sqlite3.connect('database/db.db') as conn:
                     cursor = conn.cursor()
                     cursor.execute("INSERT INTO posts (uploader_group_id,uploader_user_id,upload_date,title,desc,attach_img,rating) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                                       (current_group_id, current_user.id, date_today, gtitle, gdesc, gattach_filename[::-1].split('.',1)[1][::-1]+'.jpg', 0))
+                                       (current_group_id, current_user.id, date_today, gtitle, gdesc, gattach_filename[::-1].split('.',1)[1][::-1]+'.jpg' if gattach_filename else 'None', 0))
                     conn.commit()
                     cursor.execute("SELECT id FROM posts WHERE uploader_group_id=? AND uploader_user_id=? AND upload_date=? AND title=? AND desc=? AND attach_img=? AND rating=? ORDER BY id DESC LIMIT 1",
-                                   (current_group_id, current_user.id, date_today, gtitle, gdesc, gattach_filename[::-1].split('.',1)[1][::-1]+'.jpg', 0))
+                                   (current_group_id, current_user.id, date_today, gtitle, gdesc, gattach_filename[::-1].split('.',1)[1][::-1]+'.jpg' if gattach_filename else 'None', 0))
                     row = cursor.fetchone()
                     if row:
                         post_id=row[0]
@@ -1257,7 +1258,7 @@ def profile(login):
 
         posts = {id: rating_count(post.copy()) for id,post in temp_posts.items()}
     else:
-        return redirect('/error')
+        return redirect(url_for('error', e=404))
     if request.method == 'GET':
         error_msg = session.pop('error_msg','')
         return render_template('profile.html', clogin=current_user.login, cemail=current_user.email, login=login, subs=subs, posts=posts.values(), error=error_msg, page=page, total_pages=how_many_are_there_posts)
@@ -1396,7 +1397,7 @@ def profile(login):
                         conn.commit()
                     return redirect(f'/u/{login}')
                 else:
-                    return redirect('/error')
+                    return redirect(url_for('error', e=404))
             else:
                 return redirect(f'/u/{login}')
         else:
@@ -1445,18 +1446,18 @@ def index():
                           GROUP BY groups.group_name
                           ORDER BY groups.group_name;""")
         mods_in_groups = dict(cursor.fetchall())
-    search_users={}
-    search_groups={}
+    search_users=tuple()
+    search_groups=tuple()
     posts={}
     how_many_are_there_posts = 0
     if query!='' and (category=='' or category == 'users'):
         with sqlite3.connect('database/db.db') as conn:
             cursor = conn.cursor()
             query=re.sub(r"\s+","",query)
-            cursor.execute('SELECT login FROM users WHERE login LIKE :search', {"search": f'%{query}%'})
+            cursor.execute("SELECT login FROM users WHERE login<>'Anonymous' AND login LIKE :search", {"search": f'%{query}%'})
             how_many_are_there_posts = len(cursor.fetchall())
-            cursor.execute('SELECT login FROM users WHERE login LIKE :search LIMIT 5 OFFSET :offset', {"search": f'%{query}%', "offset": 5*(page-1)})
-            search_users = set(cursor.fetchall())
+            cursor.execute("SELECT login FROM users WHERE login<>'Anonymous' AND login LIKE :search LIMIT 5 OFFSET :offset", {"search": f'%{query}%', "offset": 5*(page-1)})
+            search_users = cursor.fetchall()
     if query!='' and (category=='' or category=='groups'):
         with sqlite3.connect('database/db.db') as conn:
             cursor = conn.cursor()
@@ -1464,7 +1465,7 @@ def index():
             cursor.execute('SELECT group_name FROM groups WHERE group_name LIKE :search', {"search": f'%{query}%'})
             how_many_are_there_posts = len(cursor.fetchall())
             cursor.execute('SELECT group_name FROM groups WHERE group_name LIKE :search LIMIT 5 OFFSET :offset', {"search": f'%{query}%', "offset": 5*(page-1)})
-            search_groups = set(cursor.fetchall())
+            search_groups = cursor.fetchall()
     if category=='' or category=='posts':
         sql_command='''SELECT posts.id,
                                      group_name,
@@ -1561,7 +1562,7 @@ def index():
                         conn.commit()
                     return redirect('/?filter=popular')
                 else:
-                    return redirect('/error')
+                    return redirect(url_for('error'))
             else:
                 return redirect('/?filter=popular')
         else:

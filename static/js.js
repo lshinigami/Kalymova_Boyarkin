@@ -37,7 +37,6 @@ async function copyLink(event) {
         await navigator.clipboard.writeText(window.location.href.match(/http[s]*:\/\/[0-9a-zA-Z-.:]+/) + '/p/' + parentId);
         copyOverlay.innerText = 'Text copied to clipboard!';
     } catch (err) {
-        console.error('Failed to copy text: ', err);
         copyOverlay.innerText = 'Failed to copy text';
     }
     setTimeout(() => {
@@ -67,7 +66,6 @@ function send_change_rating(event) {
             what = 1;
         }
     }
-    console.log(what);
     socket.emit('change_rating', {postId: parentId, what: what, clickedElementId: clickedElement.id});
 }
 
